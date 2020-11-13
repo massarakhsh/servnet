@@ -1,0 +1,7 @@
+/.idea/
+godoc
+var*
+*.exe
+*.bin
+*.cmd
+*.sh

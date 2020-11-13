@@ -1,0 +1,14 @@
+table.dataTable {
+    border: solid 1px #aaa !important;
+}
+
+table.dataTable th {
+    background: var(--col-color);
+    border-color: #aaa !important;
+    text-align: left;
+}
+
+table.dataTable td {
+    text-align: left;
+}
+
