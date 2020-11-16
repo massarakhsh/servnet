@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/lik/likdom"
+	"github.com/massarakhsh/lik/liktable"
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/controller"
 	"github.com/massarakhsh/servnet/ruler"
-	"github.com/massarakhsh/servnet/table"
 	"github.com/tealeg/xlsx"
 	"math/rand"
 	"os"
@@ -18,7 +18,7 @@ import (
 
 type Proxy struct {
 	controller.DataControl
-	Table *table.Table
+	Table *liktable.Table
 
 	DataId   string
 	DataSync sync.Mutex
@@ -88,7 +88,7 @@ func BuildProxy(rule ruler.DataRuler, level int, path []string) Proxier {
 	}
 	InitializeMapStation()
 	it := &Proxy{}
-	it.Table = table.New("server=false", "page=15")
+	it.Table = liktable.New("server=false", "page=15")
 	for _, col := range ProxyColumns {
 		it.Table.AddColumn("searchable=true",
 			"data", col.Name, "title", col.Title, "width", col.Width)

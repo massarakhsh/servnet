@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/lik/likdom"
+	"github.com/massarakhsh/lik/liktable"
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/controller"
 	"github.com/massarakhsh/servnet/ruler"
-	"github.com/massarakhsh/servnet/table"
 )
 
 type Unit struct {
 	controller.DataControl
-	Table  *table.Table
+	Table  *liktable.Table
 	Start  int
 	Length int
 	Total  int
@@ -32,7 +32,7 @@ var UnitColumns = []controller.Column{
 
 func BuildUnit(rule ruler.DataRuler, level int, path []string) Uniter {
 	it := &Unit{}
-	it.Table = table.New("server=true", "page=15")
+	it.Table = liktable.New("server=true", "page=15")
 	for _, col := range UnitColumns {
 		it.Table.AddColumn("searchable=true",
 			"data", col.Name, "title", col.Title, "width", col.Width)
