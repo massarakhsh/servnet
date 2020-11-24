@@ -7,7 +7,7 @@ import (
 
 type DataControl struct {
 	Level int
-	Mode  string
+	Mode	string
 }
 
 type ControlExecuter interface {
