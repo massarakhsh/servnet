@@ -161,7 +161,7 @@ func AddEvent(at int, ip string, mac string, namely string, formula string) {
 	set.SetItem(namely, "Namely")
 	set.SetItem(formula, "Formula")
 	InsertElm("Eventage", set)
-	old := int(time.Now().Add(time.Hour * 24 * 30).Unix())
+	old := int(time.Now().Add(-time.Hour * 24 * 30).Unix())
 	DB.Execute(fmt.Sprintf("DELETE FROM Eventage WHERE TimeAt<%d", old))
 	if DebugLevel > 0 {
 		lik.SayInfo(fmt.Sprintf("IP %s: %s", IPToShow(ip), formula))
