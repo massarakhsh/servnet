@@ -5,7 +5,6 @@ import (
 	"github.com/go-ping/ping"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/servnet/base"
-	"github.com/massarakhsh/servnet/ruler"
 	"github.com/massarakhsh/servnet/task"
 	"os/exec"
 	"time"
@@ -61,7 +60,7 @@ func (it *Pinger) pingICMP(pit *base.ElmAsk) {
 	}
 	stats := pinger.Statistics()
 	it.pingSetOnline(pit, stats.PacketsRecv > 0)
-	if ruler.DebugLevel > 1 {
+	if base.DebugLevel > 1 {
 		text := fmt.Sprintf("Ping %s", base.IPToShow(pit.IP))
 		diff := int(pit.At.Sub(time.Now()).Seconds())
 		if diff < -2 || diff > 2 {

@@ -84,6 +84,17 @@ func MACFromShow(mac string) string {
 	return macd
 }
 
+func RolesToShow(roles int) string {
+	def := ""
+	if (roles & 0x1000) != 0 {
+		def += " On"
+	}
+	if def == "" {
+		def = "Off"
+	}
+	return def
+}
+
 func SetIPOnline(ip string) {
 	if it, _ := IPMapIP[ip]; it != nil {
 		it.SetIPOnline()
@@ -127,7 +138,10 @@ func UpdateIP(elm *ElmIP) {
 	set.SetItem(elm.Roles, "Roles")
 	set.SetItem(elm.IP, "IP")
 	set.SetItem(elm.MAC, "MAC")
+	if DebugLevel > 0 {
+		lik.SayInfo(fmt.Sprintf("IP %s: %s", IPToShow(elm.IP), RolesToShow(elm.Roles)))
+	}
 	if elm.SysNum > 0 {
-		//UpdateElm("IP", elm.SysNum, set)
+		UpdateElm("IP", elm.SysNum, set)
 	}
 }

@@ -1,8 +1,8 @@
 package base
 
 import (
+	"fmt"
 	"github.com/massarakhsh/lik"
-	"github.com/massarakhsh/servnet/ruler"
 	"sync"
 	"time"
 )
@@ -81,7 +81,7 @@ func SetPingOnline(ip string, mac string) {
 					it.Roles ^= 0x1000
 					it.TimeOn = int(time.Now().Unix())
 					UpdatePing(it)
-					if ruler.DebugLevel > 0 {
+					if DebugLevel > 0 {
 						lik.SayInfo("Online " + IPToShow(ip) + "(" + MACToShow(mac) + ")")
 					}
 				}
@@ -89,7 +89,7 @@ func SetPingOnline(ip string, mac string) {
 				it.Roles ^= 0x1000
 				it.TimeOff = int(time.Now().Unix())
 				UpdatePing(it)
-				if ruler.DebugLevel > 0 {
+				if DebugLevel > 0 {
 					lik.SayInfo("OFF " + IPToShow(ip) + "(" + MACToShow(mac) + ")")
 				}
 			}
@@ -99,7 +99,7 @@ func SetPingOnline(ip string, mac string) {
 		if it := AddPing(0, ip, mac, "", 0x1000); it != nil {
 			it.TimeOn = int(time.Now().Unix())
 			UpdatePing(it)
-			if ruler.DebugLevel > 0 {
+			if DebugLevel > 0 {
 				lik.SayInfo("New online " + IPToShow(ip) + "(" + MACToShow(mac) + ")")
 			}
 		}
@@ -147,6 +147,9 @@ func UpdatePing(elm *ElmPing) {
 	set.SetItem(elm.Namely, "Namely")
 	set.SetItem(elm.TimeOn, "TimeOn")
 	set.SetItem(elm.TimeOff, "TimeOff")
+	if DebugLevel > 0 {
+		lik.SayInfo(fmt.Sprintf("Ping %s %s: %s", IPToShow(elm.IP), MACToShow(elm.MAC), RolesToShow(elm.Roles)))
+	}
 	if elm.SysNum > 0 {
 		UpdateElm("Ping", elm.SysNum, set)
 	} else {

@@ -1,7 +1,7 @@
 package task
 
 import (
-	"github.com/massarakhsh/servnet/ruler"
+	"github.com/massarakhsh/servnet/base"
 	"sync"
 	"time"
 )
@@ -50,7 +50,7 @@ func (it *Task) OnStoping() {
 
 //	Проверка, что задача останавливается
 func (it *Task) IsStoping() bool {
-	return it.isStoping || ruler.IsStoping()
+	return it.isStoping || base.IsStoping
 }
 
 //	Определить, что задача остановлена
