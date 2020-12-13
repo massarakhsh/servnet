@@ -12,6 +12,8 @@ type ElmIP struct {
 	Roles  int
 	IP     string
 	MAC    string
+	TimeOn  int
+	TimeOff int
 
 	OnlineMAC string
 	SeekOn    time.Time
@@ -35,6 +37,8 @@ func LoadIP() {
 				} else {
 					it := AddIP(sysnum, ip, elm.GetString("MAC"))
 					it.Roles = elm.GetInt("Roles")
+					it.TimeOn = elm.GetInt("TimeOn")
+					it.TimeOff = elm.GetInt("TimeOff")
 					it.SeekOn = time.Now()
 				}
 			}
@@ -105,7 +109,9 @@ func (it *ElmIP) SetIPOnline() {
 	it.SeekOn = time.Now()
 	if (it.Roles & 0x1000) == 0 {
 		it.Roles ^= 0x1000
+		it.TimeOn = int(time.Now().Unix())
 		UpdateIP(it)
+		AddEvent(it.TimeOn, it.IP, it.OnlineMAC, "", "On")
 	}
 }
 
@@ -120,8 +126,10 @@ func (it *ElmIP) SetIPOffline() {
 		if time.Now().Sub(it.SeekOn) > time.Minute*1 {
 			it.Roles ^= 0x1000
 			it.OnlineMAC = ""
+			it.TimeOff = int(time.Now().Unix())
 			UpdateIP(it)
 			SetPingOffline(it.IP)
+			AddEvent(it.TimeOn, it.IP, it.OnlineMAC, "", "Off")
 		}
 	}
 }
@@ -138,10 +146,24 @@ func UpdateIP(elm *ElmIP) {
 	set.SetItem(elm.Roles, "Roles")
 	set.SetItem(elm.IP, "IP")
 	set.SetItem(elm.MAC, "MAC")
-	if DebugLevel > 0 {
-		lik.SayInfo(fmt.Sprintf("IP %s: %s", IPToShow(elm.IP), RolesToShow(elm.Roles)))
-	}
+	set.SetItem(elm.TimeOn, "TimeOn")
+	set.SetItem(elm.TimeOff, "TimeOff")
 	if elm.SysNum > 0 {
 		UpdateElm("IP", elm.SysNum, set)
+	}
+}
+
+func AddEvent(at int, ip string, mac string, namely string, formula string) {
+	set := lik.BuildSet()
+	set.SetItem(at, "TimeAt")
+	set.SetItem(ip, "IP")
+	set.SetItem(mac, "MAC")
+	set.SetItem(namely, "Namely")
+	set.SetItem(formula, "Formula")
+	InsertElm("Eventage", set)
+	old := int(time.Now().Add(time.Hour * 24 * 30).Unix())
+	DB.Execute(fmt.Sprintf("DELETE FROM Eventage WHERE TimeAt<%d", old))
+	if DebugLevel > 0 {
+		lik.SayInfo(fmt.Sprintf("IP %s: %s", IPToShow(ip), formula))
 	}
 }
