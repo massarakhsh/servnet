@@ -1,14 +1,10 @@
 package baser
 
 import (
-	"bytes"
-	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/task"
 	"github.com/mostlygeek/arp"
-	"golang.org/x/crypto/ssh"
-	"log"
 	"time"
 )
 
@@ -42,7 +38,7 @@ func (it *ARPer) DoStep() {
 	it.SetPause(time.Second * 15)
 }
 
-func CallRouter() {
+/*func CallRouter() {
 	lik.SayInfo("SSH")
 	var hostKey ssh.PublicKey
 	config := &ssh.ClientConfig{
@@ -79,4 +75,4 @@ func CallRouter() {
 		log.Fatal("Failed to run: " + err.Error())
 	}
 	fmt.Println(b.String())
-}
+}*/
