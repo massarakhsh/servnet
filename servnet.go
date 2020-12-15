@@ -13,6 +13,7 @@ import (
 func main() {
 	lik.SetLevelInf()
 	lik.SayError("System started")
+	base.HostModes = base.MODE_ARP	//base.MODE_BASE | base.MODE_PING | base.MODE_ARP | base.MODE_REAL
 	if !getArgs() {
 		return
 	}
@@ -20,9 +21,15 @@ func main() {
 		return
 	}
 	base.WaitDB()
-	baser.StartBaser()
-	baser.StartPinger()
-	baser.StartARP()
+	if (base.HostModes & base.MODE_BASE) != 0 {
+		baser.StartBaser()
+	}
+	if (base.HostModes & base.MODE_PING) != 0 {
+		baser.StartPinger()
+	}
+	if (base.HostModes & base.MODE_ARP) != 0 {
+		baser.StartARP()
+	}
 	for !base.IsStoping {
 		time.Sleep(time.Second)
 	}
@@ -31,6 +38,9 @@ func main() {
 
 func getArgs() bool {
 	args, ok := lik.GetArgs(os.Args[1:])
+	if val := args.GetInt("mode"); val > 0 {
+		base.HostModes = val
+	}
 	if val := args.GetString("serv"); val != "" {
 		base.HostServ = val
 	}

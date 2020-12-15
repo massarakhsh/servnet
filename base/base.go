@@ -62,14 +62,17 @@ func GetElm(part string, id lik.IDB) lik.Seter {
 }
 
 func InsertElm(part string, sets lik.Seter) lik.IDB {
+	if (HostModes & MODE_REAL) == 0 { return 0 }
 	return DB.InsertElm(part, sets)
 }
 
 func UpdateElm(part string, id lik.IDB, sets lik.Seter) bool {
+	if (HostModes & MODE_REAL) == 0 { return false }
 	return DB.UpdateElm(part, id, sets)
 }
 
 func DeleteElm(part string, id lik.IDB) bool {
+	if (HostModes & MODE_REAL) == 0 { return false }
 	return DB.DeleteElm(part, id)
 }
 
