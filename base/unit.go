@@ -8,6 +8,7 @@ type ElmUnit struct {
 	SysNum lik.IDB
 	Roles  int
 	Namely string
+	IPs		[]lik.IDB
 }
 
 var MapSysUnit map[lik.IDB]*ElmUnit
@@ -31,3 +32,31 @@ func LoadUnit() {
 		}
 	}
 }
+
+func (it *ElmUnit) NetUpdate() {
+	online := false
+	for _,sysip := range it.IPs {
+		if elmip,_ := IPMapSys[sysip]; elmip != nil {
+			if (elmip.Roles & 0x1000) != 0 {
+				online = true
+				break
+			}
+		}
+	}
+	if online && (it.Roles & 0x1000) == 0 {
+		it.Roles |= 0x1000
+		it.Update()
+	} else if !online && (it.Roles & 0x1000) != 0 {
+		it.Roles ^= 0x1000
+		it.Update()
+	}
+}
+
+func (it *ElmUnit) Update() {
+	set := lik.BuildSet()
+	set.SetItem(it.Roles, "Roles")
+	if it.SysNum > 0 {
+		UpdateElm("Unit", it.SysNum, set)
+	}
+}
+

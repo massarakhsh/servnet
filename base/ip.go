@@ -14,6 +14,7 @@ type ElmIP struct {
 	MAC    string
 	TimeOn  int
 	TimeOff int
+	SysUnit	lik.IDB
 
 	OnlineMAC string
 	SeekOn    time.Time
@@ -35,11 +36,14 @@ func LoadIP() {
 					lik.SayError("IP duplicate " + IPToShow(ip) + " daleted")
 					DeleteElm("IP", sysnum)
 				} else {
-					it := AddIP(sysnum, ip, elm.GetString("MAC"))
-					it.Roles = elm.GetInt("Roles")
+					it := AddIP(sysnum, ip, elm.GetString("MAC"), elm.GetInt("Roles"))
 					it.TimeOn = elm.GetInt("TimeOn")
 					it.TimeOff = elm.GetInt("TimeOff")
+					it.SysUnit = elm.GetIDB("SysUnit")
 					it.SeekOn = time.Now()
+					if unit,_ := MapSysUnit[it.SysUnit]; unit != nil {
+						unit.IPs = append(unit.IPs, sysnum)
+					}
 				}
 			}
 		}
@@ -110,7 +114,7 @@ func (it *ElmIP) SetIPOnline() {
 	if (it.Roles & 0x1000) == 0 {
 		it.Roles ^= 0x1000
 		it.TimeOn = int(time.Now().Unix())
-		UpdateIP(it)
+		it.Update()
 		AddEvent(it.TimeOn, it.IP, it.OnlineMAC, "", "On")
 	}
 }
@@ -127,30 +131,34 @@ func (it *ElmIP) SetIPOffline() {
 			it.Roles ^= 0x1000
 			it.OnlineMAC = ""
 			it.TimeOff = int(time.Now().Unix())
-			UpdateIP(it)
+			it.Update()
 			SetPingOffline(it.IP)
 			AddEvent(it.TimeOn, it.IP, it.OnlineMAC, "", "Off")
 		}
 	}
 }
 
-func AddIP(sys lik.IDB, ip string, mac string) *ElmIP {
-	it := &ElmIP{SysNum: sys, IP: ip, MAC: mac}
+func (it *ElmIP) Update() {
+	set := lik.BuildSet()
+	set.SetItem(it.Roles, "Roles")
+	set.SetItem(it.IP, "IP")
+	set.SetItem(it.MAC, "MAC")
+	set.SetItem(it.TimeOn, "TimeOn")
+	set.SetItem(it.TimeOff, "TimeOff")
+	if it.SysNum > 0 {
+		UpdateElm("IP", it.SysNum, set)
+	}
+	if unit,_ := MapSysUnit[it.SysUnit]; unit != nil {
+		unit.NetUpdate()
+	}
+}
+
+func AddIP(sys lik.IDB, ip string, mac string, roles int) *ElmIP {
+	AddAsk(ip, (roles&0x1000) != 0)
+	it := &ElmIP{SysNum: sys, IP: ip, MAC: mac, Roles: roles }
 	IPMapSys[sys] = it
 	IPMapIP[ip] = it
 	return it
-}
-
-func UpdateIP(elm *ElmIP) {
-	set := lik.BuildSet()
-	set.SetItem(elm.Roles, "Roles")
-	set.SetItem(elm.IP, "IP")
-	set.SetItem(elm.MAC, "MAC")
-	set.SetItem(elm.TimeOn, "TimeOn")
-	set.SetItem(elm.TimeOff, "TimeOff")
-	if elm.SysNum > 0 {
-		UpdateElm("IP", elm.SysNum, set)
-	}
 }
 
 func AddEvent(at int, ip string, mac string, namely string, formula string) {

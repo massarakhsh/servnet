@@ -48,6 +48,9 @@ func (it *Pinger) pingExec(pit *base.ElmAsk) {
 }
 
 func (it *Pinger) pingICMP(pit *base.ElmAsk) {
+	if pit.IP == "192168000016" {
+		pit.IP += ""
+	}
 	pinger, err := ping.NewPinger(base.IPToShow(pit.IP))
 	if err != nil {
 		return
