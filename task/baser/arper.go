@@ -2,6 +2,7 @@ package baser
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/task"
@@ -31,9 +32,10 @@ func StartARP() {
 
 func (it *ARPer) DoStep() {
 	it.Elms = []ArpElm{}
-	it.callLocal()
-	it.callRoot()
-	it.callRouter()
+	//it.callLocal()
+	//it.callRoot()
+	//it.callRouter()
+	it.callSwitch()
 	base.LockDB()
 	for _,elm := range it.Elms {
 		//fmt.Printf("%s : %s\n", base.IPToShow(elm.IP), base.MACToShow(elm.MAC))
@@ -81,6 +83,15 @@ func (it *ARPer) callRouter() {
 					it.addElm("", mac)
 				}
 			}
+		}
+		touch.Close()
+	}
+}
+
+func (it *ARPer) callSwitch() {
+	if touch := Open("192.168.0.241:22", "cisco", "gamilto17", ""); touch != nil {
+		if answer := touch.Execute("dir"); answer != "" {
+			fmt.Println(answer)
 		}
 		touch.Close()
 	}

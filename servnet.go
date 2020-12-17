@@ -13,7 +13,8 @@ import (
 func main() {
 	lik.SetLevelInf()
 	lik.SayError("System started")
-	base.HostModes = base.MODE_BASE | base.MODE_PING | base.MODE_ARP | base.MODE_REAL
+	//base.HostModes = base.MODE_BASE | base.MODE_PING | base.MODE_ARP | base.MODE_REAL
+	base.HostModes = base.MODE_ARP
 	if !getArgs() {
 		return
 	}
