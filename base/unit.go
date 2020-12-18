@@ -8,6 +8,8 @@ type ElmUnit struct {
 	SysNum lik.IDB
 	Roles  int
 	Namely string
+	Path		string
+	Map			string
 	IPs		[]lik.IDB
 }
 
@@ -24,6 +26,8 @@ func LoadUnit() {
 				it := &ElmUnit{SysNum: sysnum}
 				it.Roles = elm.GetInt("Roles")
 				it.Namely = elm.GetString("Namely")
+				it.Path = elm.GetString("Path")
+				it.Map = elm.GetString("Map")
 				MapSysUnit[sysnum] = it
 				if _, ok := MapNamelyUnit[it.Namely]; !ok {
 					MapNamelyUnit[it.Namely] = it
@@ -34,27 +38,31 @@ func LoadUnit() {
 }
 
 func (it *ElmUnit) NetUpdate() {
-	online := false
+	ip := ""
 	for _,sysip := range it.IPs {
 		if elmip,_ := IPMapSys[sysip]; elmip != nil {
 			if (elmip.Roles & 0x1000) != 0 {
-				online = true
+				ip = elmip.IP
 				break
 			}
 		}
 	}
-	if online && (it.Roles & 0x1000) == 0 {
+	if ip != "" && (it.Roles & 0x1000) == 0 {
 		it.Roles |= 0x1000
 		it.Update()
-	} else if !online && (it.Roles & 0x1000) != 0 {
+		AddEvent(ip, "", it.Namely, "ON unit")
+	} else if ip == "" && (it.Roles & 0x1000) != 0 {
 		it.Roles ^= 0x1000
 		it.Update()
+		AddEvent("", "", it.Namely, "OFF unit")
 	}
 }
 
 func (it *ElmUnit) Update() {
 	set := lik.BuildSet()
 	set.SetItem(it.Roles, "Roles")
+	set.SetItem(it.Path, "Path")
+	set.SetItem(it.Map, "Map")
 	if it.SysNum > 0 {
 		UpdateElm("Unit", it.SysNum, set)
 	}

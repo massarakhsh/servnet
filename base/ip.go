@@ -115,7 +115,7 @@ func (it *ElmIP) SetIPOnline() {
 		it.Roles ^= 0x1000
 		it.TimeOn = int(time.Now().Unix())
 		it.Update()
-		AddEvent(it.TimeOn, it.IP, it.OnlineMAC, "", "On")
+		AddEvent(it.IP, it.OnlineMAC, "", "ON ip")
 	}
 }
 
@@ -133,7 +133,7 @@ func (it *ElmIP) SetIPOffline() {
 			it.TimeOff = int(time.Now().Unix())
 			it.Update()
 			SetPingOffline(it.IP)
-			AddEvent(it.TimeOn, it.IP, it.OnlineMAC, "", "Off")
+			AddEvent(it.IP, it.OnlineMAC, "", "OFF ip")
 		}
 	}
 }
@@ -161,17 +161,3 @@ func AddIP(sys lik.IDB, ip string, mac string, roles int) *ElmIP {
 	return it
 }
 
-func AddEvent(at int, ip string, mac string, namely string, formula string) {
-	set := lik.BuildSet()
-	set.SetItem(at, "TimeAt")
-	set.SetItem(ip, "IP")
-	set.SetItem(mac, "MAC")
-	set.SetItem(namely, "Namely")
-	set.SetItem(formula, "Formula")
-	InsertElm("Eventage", set)
-	//old := int(time.Now().Add(-time.Hour * 24 * 30).Unix())
-	//DB.Execute(fmt.Sprintf("DELETE FROM Eventage WHERE TimeAt<%d", old))
-	if DebugLevel > 0 {
-		lik.SayInfo(fmt.Sprintf("IP %s: %s", IPToShow(ip), formula))
-	}
-}

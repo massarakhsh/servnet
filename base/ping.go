@@ -1,7 +1,6 @@
 package base
 
 import (
-	"fmt"
 	"github.com/massarakhsh/lik"
 	"sync"
 	"time"
@@ -59,7 +58,7 @@ func SetPingOffline(ip string) {
 			if (elm.Roles & 0x1000) != 0 {
 				elm.Roles ^= 0x1000
 				elm.TimeOff = int(time.Now().Unix())
-				UpdatePing(elm)
+				elm.Update()
 			}
 		}
 	}
@@ -80,28 +79,22 @@ func SetPingOnline(ip string, mac string) {
 				if (it.Roles & 0x1000) == 0 {
 					it.Roles ^= 0x1000
 					it.TimeOn = int(time.Now().Unix())
-					UpdatePing(it)
-					if DebugLevel > 0 {
-						lik.SayInfo("Online " + IPToShow(ip) + "(" + MACToShow(mac) + ")")
-					}
+					it.Update()
+					AddEvent(it.IP, it.MAC, it.Namely, "ON ping")
 				}
 			} else if ip != "" && (it.Roles&0x1000) != 0 {
 				it.Roles ^= 0x1000
 				it.TimeOff = int(time.Now().Unix())
-				UpdatePing(it)
-				if DebugLevel > 0 {
-					lik.SayInfo("OFF " + IPToShow(ip) + "(" + MACToShow(mac) + ")")
-				}
+				it.Update()
+				AddEvent(it.IP, it.MAC, it.Namely, "OFF ping")
 			}
 		}
 	}
 	if !found {
 		if it := AddPing(0, ip, mac, "", 0x1000); it != nil {
 			it.TimeOn = int(time.Now().Unix())
-			UpdatePing(it)
-			if DebugLevel > 0 {
-				lik.SayInfo("New online " + IPToShow(ip) + "(" + MACToShow(mac) + ")")
-			}
+			it.Update()
+			AddEvent(ip, mac, "", "ON new")
 		}
 	}
 	PingSync.Unlock()
@@ -139,21 +132,18 @@ func AddPing(sys lik.IDB, ip string, mac string, name string, roles int) *ElmPin
 	return it
 }
 
-func UpdatePing(elm *ElmPing) {
+func (it *ElmPing) Update() {
 	set := lik.BuildSet()
-	set.SetItem(elm.Roles, "Roles")
-	set.SetItem(elm.IP, "IP")
-	set.SetItem(elm.MAC, "MAC")
-	set.SetItem(elm.Namely, "Namely")
-	set.SetItem(elm.TimeOn, "TimeOn")
-	set.SetItem(elm.TimeOff, "TimeOff")
-	if DebugLevel > 0 {
-		lik.SayInfo(fmt.Sprintf("Ping %s %s: %s", IPToShow(elm.IP), MACToShow(elm.MAC), RolesToShow(elm.Roles)))
-	}
-	if elm.SysNum > 0 {
-		UpdateElm("Ping", elm.SysNum, set)
+	set.SetItem(it.Roles, "Roles")
+	set.SetItem(it.IP, "IP")
+	set.SetItem(it.MAC, "MAC")
+	set.SetItem(it.Namely, "Namely")
+	set.SetItem(it.TimeOn, "TimeOn")
+	set.SetItem(it.TimeOff, "TimeOff")
+	if it.SysNum > 0 {
+		UpdateElm("Ping", it.SysNum, set)
 	} else {
-		elm.SysNum = InsertElm("Ping", set)
-		PingMapSys[elm.SysNum] = elm
+		it.SysNum = InsertElm("Ping", set)
+		PingMapSys[it.SysNum] = it
 	}
 }

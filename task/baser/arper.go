@@ -32,10 +32,10 @@ func StartARP() {
 
 func (it *ARPer) DoStep() {
 	it.Elms = []ArpElm{}
-	//it.callLocal()
-	//it.callRoot()
-	//it.callRouter()
-	it.callSwitch()
+	it.callLocal()
+	it.callRoot()
+	it.callRouter()
+	//it.callSwitch()
 	base.LockDB()
 	for _,elm := range it.Elms {
 		//fmt.Printf("%s : %s\n", base.IPToShow(elm.IP), base.MACToShow(elm.MAC))

@@ -51,6 +51,7 @@ func LoadTables() {
 	dbOk = false
 	InitAsk()
 	LoadUnit()
+	LoadLink()
 	LoadIP()
 	LoadPing()
 	dbOk = true
@@ -109,5 +110,25 @@ func SetParm(key string, val string) {
 		UpdateElm("LikParam", one.GetIDB("SysNum"), lik.BuildSet("Value", val))
 	} else if val != "" {
 		InsertElm("LikParam", lik.BuildSet("Namely", key, "Value", val))
+	}
+}
+
+func AddEvent(ip string, mac string, namely string, formula string) {
+	at := int(time.Now().Unix())
+	set := lik.BuildSet()
+	set.SetItem(at, "TimeAt")
+	set.SetItem(ip, "IP")
+	set.SetItem(mac, "MAC")
+	set.SetItem(namely, "Namely")
+	set.SetItem(formula, "Formula")
+	InsertElm("Eventage", set)
+	old := int(time.Now().Add(-time.Hour * 24 * 35).Unix())
+	DB.Execute(fmt.Sprintf("DELETE FROM Eventage WHERE TimeAt<%d", old))
+	if DebugLevel > 0 {
+		who := IPToShow(ip)
+		if mac != "" {
+			who += " " + MACToShow(mac)
+		}
+		lik.SayInfo(fmt.Sprintf("%s %s: %s", formula, namely, who))
 	}
 }
