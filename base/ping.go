@@ -14,6 +14,7 @@ type ElmPing struct {
 	Namely  string
 	TimeOn  int
 	TimeOff int
+	TimeOnline	time.Time
 }
 
 type ElmIM struct {
@@ -76,6 +77,7 @@ func SetPingOnline(ip string, mac string) {
 		if ip == "" || ip == it.IP {
 			if mac == "" || mac == it.MAC {
 				found = true
+				it.TimeOnline = time.Now()
 				if (it.Roles & 0x1000) == 0 {
 					it.Roles ^= 0x1000
 					it.TimeOn = int(time.Now().Unix())
@@ -83,10 +85,12 @@ func SetPingOnline(ip string, mac string) {
 					AddEvent(it.IP, it.MAC, it.Namely, "ON ping")
 				}
 			} else if ip != "" && (it.Roles&0x1000) != 0 {
-				it.Roles ^= 0x1000
-				it.TimeOff = int(time.Now().Unix())
-				it.Update()
-				AddEvent(it.IP, it.MAC, it.Namely, "OFF ping")
+				if time.Now().Sub(it.TimeOnline) > time.Second * 120 {
+					it.Roles ^= 0x1000
+					it.TimeOff = int(time.Now().Unix())
+					it.Update()
+					AddEvent(it.IP, it.MAC, it.Namely, "OFF ping")
+				}
 			}
 		}
 	}
