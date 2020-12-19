@@ -97,17 +97,16 @@ func (it *ARPer) callSwitch() {
 
 func (it *ARPer) addElm(ip string, mac string) {
 	for p := 0; p < len(it.Elms); p++ {
-		if ip != "" && ip == it.Elms[p].IP {
-			if it.Elms[p].MAC == "" {
-				it.Elms[p].MAC = mac
+		if ip == "" || it.Elms[p].IP == "" || ip == it.Elms[p].IP {
+			if mac == "" || it.Elms[p].MAC == "" || mac == it.Elms[p].MAC {
+				if it.Elms[p].IP == "" && ip != "" {
+					it.Elms[p].IP = ip
+				}
+				if it.Elms[p].MAC == "" && mac != "" {
+					it.Elms[p].MAC = mac
+				}
+				return
 			}
-			return
-		}
-		if mac != "" && mac == it.Elms[p].MAC {
-			if it.Elms[p].IP == "" {
-				it.Elms[p].IP = ip
-			}
-			return
 		}
 	}
 	it.Elms = append(it.Elms, ArpElm{ ip, mac })

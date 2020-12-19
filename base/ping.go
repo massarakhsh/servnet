@@ -11,20 +11,16 @@ type ElmPing struct {
 	Roles   int
 	IP      string
 	MAC     string
-	Namely  string
 	TimeOn  int
 	TimeOff int
-	TimeOnline	time.Time
-}
 
-type ElmIM struct {
-	Pings []*ElmPing
+	SeekOn  time.Time
 }
 
 var PingSync sync.Mutex
 var PingList []*ElmPing
 var PingMapSys map[lik.IDB]*ElmPing
-var PingMapIM map[string]*ElmIM
+var PingMapIM map[string]*ElmPing
 
 func LoadPing() {
 	list := GetList("Ping")
@@ -32,19 +28,19 @@ func LoadPing() {
 		PingSync.Lock()
 		PingList = []*ElmPing{}
 		PingMapSys = make(map[lik.IDB]*ElmPing)
-		PingMapIM = make(map[string]*ElmIM)
+		PingMapIM = make(map[string]*ElmPing)
 		for n := 0; n < list.Count(); n++ {
 			if elm := list.GetSet(n); elm != nil {
 				sys := elm.GetIDB("SysNum")
 				ip := elm.GetString("IP")
 				mac := elm.GetString("MAC")
-				namely := elm.GetString("Namely")
 				roles := elm.GetInt("Roles")
-				if it := AddPing(sys, ip, mac, namely, roles); it == nil {
+				if it := AddPing(sys, ip, mac, roles); it == nil {
 					DeleteElm("Ping", sys)
 				} else {
 					it.TimeOn = elm.GetInt("TimeOn")
 					it.TimeOff = elm.GetInt("TimeOff")
+					it.SeekOn = time.Unix(int64(it.TimeOn), 0)
 				}
 			}
 		}
@@ -52,14 +48,14 @@ func LoadPing() {
 	}
 }
 
-func SetPingOffline(ip string) {
+func SetPingsOffline(ip string) {
 	PingSync.Lock()
-	for _, elm := range PingMapSys {
-		if ip == elm.IP {
-			if (elm.Roles & 0x1000) != 0 {
-				elm.Roles ^= 0x1000
-				elm.TimeOff = int(time.Now().Unix())
-				elm.Update()
+	for _, it := range PingMapSys {
+		if ip == "" || ip == it.IP {
+			if (it.Roles & 0x1000) != 0 {
+				it.Roles ^= 0x1000
+				it.TimeOff = int(time.Now().Unix())
+				it.Update()
 			}
 		}
 	}
@@ -77,26 +73,27 @@ func SetPingOnline(ip string, mac string) {
 		if ip == "" || ip == it.IP {
 			if mac == "" || mac == it.MAC {
 				found = true
-				it.TimeOnline = time.Now()
+				it.SeekOn = time.Now()
 				if (it.Roles & 0x1000) == 0 {
 					it.Roles ^= 0x1000
 					it.TimeOn = int(time.Now().Unix())
 					it.Update()
-					AddEvent(it.IP, it.MAC, it.Namely, "ON ping")
+					AddEvent(it.IP, it.MAC, "", "ON ping")
 				}
 			} else if ip != "" && (it.Roles&0x1000) != 0 {
-				if time.Now().Sub(it.TimeOnline) > time.Second * 120 {
+				if time.Now().Sub(it.SeekOn) > time.Minute * 2 {
 					it.Roles ^= 0x1000
 					it.TimeOff = int(time.Now().Unix())
 					it.Update()
-					AddEvent(it.IP, it.MAC, it.Namely, "OFF ping")
+					AddEvent(it.IP, it.MAC, "", "OFF ping")
 				}
 			}
 		}
 	}
 	if !found {
-		if it := AddPing(0, ip, mac, "", 0x1000); it != nil {
+		if it := AddPing(0, ip, mac, 0x1000); it != nil {
 			it.TimeOn = int(time.Now().Unix())
+			it.SeekOn = time.Now()
 			it.Update()
 			AddEvent(ip, mac, "", "ON new")
 		}
@@ -104,33 +101,20 @@ func SetPingOnline(ip string, mac string) {
 	PingSync.Unlock()
 }
 
-func AddPing(sys lik.IDB, ip string, mac string, name string, roles int) *ElmPing {
+func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
 	var it *ElmPing
 	if ip != "" {
 		AddAsk(ip, (roles&0x1000) != 0)
 		if mac != "" {
-			found := false
-			im := ip + mac
-			itim, _ := PingMapIM[im]
-			if itim != nil {
-				for _, ep := range itim.Pings {
-					if name == "" || ep.Namely == "" || name == ep.Namely {
-						found = true
-						break
-					}
-				}
+			if elm,_ := PingMapIM[ip+mac]; elm != nil {
+				return nil
 			}
-			if !found {
-				it = &ElmPing{SysNum: sys, IP: ip, MAC: mac, Namely: name, Roles: roles}
-				PingList = append(PingList, it)
-				if sys > 0 {
-					PingMapSys[sys] = it
-				}
-				if itim == nil {
-					itim = &ElmIM{}
-				}
-				itim.Pings = append(itim.Pings, it)
+			it = &ElmPing{SysNum: sys, IP: ip, MAC: mac, Roles: roles}
+			PingList = append(PingList, it)
+			if sys > 0 {
+				PingMapSys[sys] = it
 			}
+			PingMapIM[ip+mac] = it
 		}
 	}
 	return it
@@ -141,7 +125,6 @@ func (it *ElmPing) Update() {
 	set.SetItem(it.Roles, "Roles")
 	set.SetItem(it.IP, "IP")
 	set.SetItem(it.MAC, "MAC")
-	set.SetItem(it.Namely, "Namely")
 	set.SetItem(it.TimeOn, "TimeOn")
 	set.SetItem(it.TimeOff, "TimeOff")
 	if it.SysNum > 0 {
