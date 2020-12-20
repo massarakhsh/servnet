@@ -40,7 +40,7 @@ func LoadPing() {
 				} else {
 					it.TimeOn = elm.GetInt("TimeOn")
 					it.TimeOff = elm.GetInt("TimeOff")
-					it.SeekOn = time.Unix(int64(it.TimeOn), 0)
+					it.SeekOn = time.Now()
 				}
 			}
 		}
