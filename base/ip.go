@@ -127,7 +127,7 @@ func SetIPOffline(ip string) {
 
 func (it *ElmIP) SetIPOffline() {
 	if (it.Roles & 0x1000) != 0 {
-		if time.Now().Sub(it.SeekOn) > time.Minute * 2 {
+		if time.Now().Sub(it.SeekOn) > TimeoutOffline {
 			it.Roles ^= 0x1000
 			it.OnlineMAC = ""
 			it.TimeOff = int(time.Now().Unix())

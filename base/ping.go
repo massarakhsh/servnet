@@ -81,7 +81,7 @@ func SetPingOnline(ip string, mac string) {
 					AddEvent(it.IP, it.MAC, "", "ON ping")
 				}
 			} else if ip != "" && (it.Roles&0x1000) != 0 {
-				if time.Now().Sub(it.SeekOn) > time.Minute * 2 {
+				if time.Now().Sub(it.SeekOn) > TimeoutMAC {
 					it.Roles ^= 0x1000
 					it.TimeOff = int(time.Now().Unix())
 					it.Update()
