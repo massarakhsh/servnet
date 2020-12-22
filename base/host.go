@@ -15,6 +15,6 @@ const MODE_PING = 0x2
 const MODE_ARP = 0x4
 const MODE_REAL = 0x10
 
-var TimeoutOffline = time.Second * 600
+var TimeoutIP = time.Second * 600
 var TimeoutMAC = time.Second * 180
 

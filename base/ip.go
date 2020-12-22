@@ -21,6 +21,7 @@ type ElmIP struct {
 }
 
 var IPMapSys map[lik.IDB]*ElmIP
+var IPMapOld map[lik.IDB]*ElmIP
 var IPMapIP map[string]*ElmIP
 
 func LoadIP() {
@@ -29,24 +30,31 @@ func LoadIP() {
 		IPMapIP = make(map[string]*ElmIP)
 		for n := 0; n < list.Count(); n++ {
 			if elm := list.GetSet(n); elm != nil {
-				sysnum := elm.GetIDB("SysNum")
+				sys := elm.GetIDB("SysNum")
 				if ip := elm.GetString("IP"); ip == "" {
-					DeleteElm("IP", sysnum)
+					DeleteElm("IP", sys)
 				} else if _, ok := IPMapIP[ip]; ok {
 					lik.SayError("IP duplicate " + IPToShow(ip) + " daleted")
-					DeleteElm("IP", sysnum)
+					DeleteElm("IP", sys)
 				} else {
-					it := AddIP(sysnum, ip, elm.GetString("MAC"), elm.GetInt("Roles"))
+					it := AddIP(sys, ip, elm.GetString("MAC"), elm.GetInt("Roles"))
 					it.TimeOn = elm.GetInt("TimeOn")
 					it.TimeOff = elm.GetInt("TimeOff")
 					it.SysUnit = elm.GetIDB("SysUnit")
-					it.SeekOn = time.Now()
+					if IPMapOld == nil {
+						it.SeekOn = time.Now()
+					} else if old := IPMapOld[sys]; old == nil {
+						it.SeekOn = time.Now()
+					} else {
+						it.SeekOn = old.SeekOn
+					}
 					if unit,_ := MapSysUnit[it.SysUnit]; unit != nil {
-						unit.IPs = append(unit.IPs, sysnum)
+						unit.ListIP = append(unit.ListIP, sys)
 					}
 				}
 			}
 		}
+		IPMapOld = IPMapSys
 	}
 }
 
@@ -127,7 +135,7 @@ func SetIPOffline(ip string) {
 
 func (it *ElmIP) SetIPOffline() {
 	if (it.Roles & 0x1000) != 0 {
-		if time.Now().Sub(it.SeekOn) > TimeoutOffline {
+		if time.Now().Sub(it.SeekOn) > TimeoutIP {
 			it.Roles ^= 0x1000
 			it.OnlineMAC = ""
 			it.TimeOff = int(time.Now().Unix())

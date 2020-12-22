@@ -20,6 +20,7 @@ type ElmPing struct {
 var PingSync sync.Mutex
 var PingList []*ElmPing
 var PingMapSys map[lik.IDB]*ElmPing
+var PingMapOld map[lik.IDB]*ElmPing
 var PingMapIM map[string]*ElmPing
 
 func LoadPing() {
@@ -40,10 +41,17 @@ func LoadPing() {
 				} else {
 					it.TimeOn = elm.GetInt("TimeOn")
 					it.TimeOff = elm.GetInt("TimeOff")
-					it.SeekOn = time.Now()
+					if PingMapOld == nil {
+						it.SeekOn = time.Now()
+					} else if old := PingMapOld[sys]; old == nil {
+						it.SeekOn = time.Now()
+					} else {
+						it.SeekOn = old.SeekOn
+					}
 				}
 			}
 		}
+		PingMapOld = PingMapSys
 		PingSync.Unlock()
 	}
 }

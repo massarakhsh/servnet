@@ -8,9 +8,9 @@ type ElmUnit struct {
 	SysNum lik.IDB
 	Roles  int
 	Namely string
-	Path		string
-	Map			string
-	IPs		[]lik.IDB
+	Path   string
+	Map    string
+	ListIP []lik.IDB
 }
 
 var MapSysUnit map[lik.IDB]*ElmUnit
@@ -39,7 +39,7 @@ func LoadUnit() {
 
 func (it *ElmUnit) NetUpdate() {
 	ip := ""
-	for _,sysip := range it.IPs {
+	for _,sysip := range it.ListIP {
 		if elmip,_ := IPMapSys[sysip]; elmip != nil {
 			if (elmip.Roles & 0x1000) != 0 {
 				ip = elmip.IP
