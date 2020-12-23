@@ -60,8 +60,8 @@ func SetPingsOffline(ip string) {
 	PingSync.Lock()
 	for _, it := range PingMapSys {
 		if ip == "" || ip == it.IP {
-			if (it.Roles & 0x1000) != 0 {
-				it.Roles ^= 0x1000
+			if (it.Roles & ROLE_ONLINE) != 0 {
+				it.Roles ^= ROLE_ONLINE
 				it.TimeOff = int(time.Now().Unix())
 				it.Update()
 			}
@@ -82,15 +82,15 @@ func SetPingOnline(ip string, mac string) {
 			if mac == "" || mac == it.MAC {
 				found = true
 				it.SeekOn = time.Now()
-				if (it.Roles & 0x1000) == 0 {
-					it.Roles ^= 0x1000
+				if (it.Roles & ROLE_ONLINE) == 0 {
+					it.Roles ^= ROLE_ONLINE
 					it.TimeOn = int(time.Now().Unix())
 					it.Update()
 					AddEvent(it.IP, it.MAC, "", "ON ping")
 				}
-			} else if ip != "" && (it.Roles&0x1000) != 0 {
+			} else if ip != "" && (it.Roles&ROLE_ONLINE) != 0 {
 				if time.Now().Sub(it.SeekOn) > TimeoutMAC {
-					it.Roles ^= 0x1000
+					it.Roles ^= ROLE_ONLINE
 					it.TimeOff = int(time.Now().Unix())
 					it.Update()
 					AddEvent(it.IP, it.MAC, "", "OFF ping")
@@ -99,7 +99,7 @@ func SetPingOnline(ip string, mac string) {
 		}
 	}
 	if !found {
-		if it := AddPing(0, ip, mac, 0x1000); it != nil {
+		if it := AddPing(0, ip, mac, ROLE_ONLINE); it != nil {
 			it.TimeOn = int(time.Now().Unix())
 			it.SeekOn = time.Now()
 			it.Update()
@@ -112,7 +112,7 @@ func SetPingOnline(ip string, mac string) {
 func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
 	var it *ElmPing
 	if ip != "" {
-		AddAsk(ip, (roles&0x1000) != 0)
+		AddAsk(ip, (roles&ROLE_ONLINE) != 0)
 		if mac != "" {
 			if elm,_ := PingMapIM[ip+mac]; elm != nil {
 				return nil

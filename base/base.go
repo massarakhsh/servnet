@@ -54,6 +54,7 @@ func LoadTables() {
 	LoadLink()
 	LoadIP()
 	LoadPing()
+	NetLink()
 	dbOk = true
 	UnlockDB()
 }

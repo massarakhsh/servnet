@@ -48,7 +48,7 @@ func LoadIP() {
 					} else {
 						it.SeekOn = old.SeekOn
 					}
-					if unit,_ := MapSysUnit[it.SysUnit]; unit != nil {
+					if unit,_ := UnitMapSys[it.SysUnit]; unit != nil {
 						unit.ListIP = append(unit.ListIP, sys)
 					}
 				}
@@ -102,7 +102,7 @@ func MACFromShow(mac string) string {
 
 func RolesToShow(roles int) string {
 	def := ""
-	if (roles & 0x1000) != 0 {
+	if (roles & ROLE_ONLINE) != 0 {
 		def += " On"
 	}
 	if def == "" {
@@ -119,8 +119,8 @@ func SetIPOnline(ip string) {
 
 func (it *ElmIP) SetIPOnline() {
 	it.SeekOn = time.Now()
-	if (it.Roles & 0x1000) == 0 {
-		it.Roles ^= 0x1000
+	if (it.Roles & ROLE_ONLINE) == 0 {
+		it.Roles ^= ROLE_ONLINE
 		it.TimeOn = int(time.Now().Unix())
 		it.Update()
 		AddEvent(it.IP, it.OnlineMAC, "", "ON ip")
@@ -134,9 +134,9 @@ func SetIPOffline(ip string) {
 }
 
 func (it *ElmIP) SetIPOffline() {
-	if (it.Roles & 0x1000) != 0 {
+	if (it.Roles & ROLE_ONLINE) != 0 {
 		if time.Now().Sub(it.SeekOn) > TimeoutIP {
-			it.Roles ^= 0x1000
+			it.Roles ^= ROLE_ONLINE
 			it.OnlineMAC = ""
 			it.TimeOff = int(time.Now().Unix())
 			it.Update()
@@ -156,13 +156,13 @@ func (it *ElmIP) Update() {
 	if it.SysNum > 0 {
 		UpdateElm("IP", it.SysNum, set)
 	}
-	if unit,_ := MapSysUnit[it.SysUnit]; unit != nil {
+	if unit,_ := UnitMapSys[it.SysUnit]; unit != nil {
 		unit.NetUpdate()
 	}
 }
 
 func AddIP(sys lik.IDB, ip string, mac string, roles int) *ElmIP {
-	AddAsk(ip, (roles&0x1000) != 0)
+	AddAsk(ip, (roles&ROLE_ONLINE) != 0)
 	it := &ElmIP{SysNum: sys, IP: ip, MAC: mac, Roles: roles }
 	IPMapSys[sys] = it
 	IPMapIP[ip] = it

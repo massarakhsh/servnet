@@ -10,9 +10,10 @@ type ElmLink struct {
 	Path		string
 	Map			string
 	SysUnitA	lik.IDB
-	PortA		string
+	PortA		int
 	SysUnitB	lik.IDB
-	PortB		string
+	PortB		int
+	NewPath		string
 }
 
 var LinkMapSys map[lik.IDB]*ElmLink
@@ -22,16 +23,22 @@ func LoadLink() {
 		LinkMapSys = make(map[lik.IDB]*ElmLink)
 		for n := 0; n < list.Count(); n++ {
 			if elm := list.GetSet(n); elm != nil {
-				sysnum := elm.GetIDB("SysNum")
-				it := &ElmLink{SysNum: sysnum}
+				sys := elm.GetIDB("SysNum")
+				it := &ElmLink{SysNum: sys}
 				it.Path = elm.GetString("Path")
 				it.Map = elm.GetString("Map")
 				it.Roles = elm.GetInt("Roles")
 				it.SysUnitA = elm.GetIDB("SysUnitA")
-				it.PortA = elm.GetString("PortA")
+				it.PortA = elm.GetInt("PortA")
 				it.SysUnitB = elm.GetIDB("SysUnitB")
-				it.PortB = elm.GetString("PortB")
-				LinkMapSys[sysnum] = it
+				it.PortB = elm.GetInt("PortB")
+				LinkMapSys[sys] = it
+				if unit,_ := UnitMapSys[it.SysUnitA]; unit != nil {
+					unit.ListLink = append(unit.ListLink, sys)
+				}
+				if unit,_ := UnitMapSys[it.SysUnitB]; unit != nil {
+					unit.ListLink = append(unit.ListLink, sys)
+				}
 			}
 		}
 	}
