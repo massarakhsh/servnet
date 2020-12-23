@@ -2,7 +2,7 @@ package base
 
 import "time"
 
-var HostServ = "192.168.234.62"
+var HostServ = "localhost"
 var HostBase = "rptp"
 var HostUser = "rptp"
 var HostPass = "Shaman1961"

@@ -5,6 +5,7 @@ import (
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/task/baser"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/massarakhsh/lik"
@@ -12,6 +13,11 @@ import (
 
 func main() {
 	lik.SetLevelInf()
+	host,_ := os.Hostname()
+	host = strings.ToLower(host)
+	if host == "shaman" {
+		base.HostServ = "192.168.234.62"
+	}
 	lik.SayError("System started")
 	base.HostModes = base.MODE_BASE | base.MODE_PING | base.MODE_ARP | base.MODE_REAL
 	//base.HostModes = base.MODE_ARP
