@@ -13,7 +13,7 @@ import (
 func Configurate() {
 	confDirect()
 	confReverse()
-	//confDHCP()
+	confDHCP()
 	confGate()
 }
 
@@ -28,6 +28,7 @@ func confDirect() {
 	list := confListIP()
 	used := make(map[string]bool)
 	for _,elm := range list {
+		elm.Canonic = ""
 		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & 0x200) == 0 {	//	Первичный адрес
 			ip := IPToShow(elm.IP)
 			var hosts []string
@@ -52,6 +53,9 @@ func confDirect() {
 			}
 			for _,name := range hosts {
 				code += fmt.Sprintf("%s.rptp.org.	IN	A	%s\n", name, ip)
+				if elm.Canonic == "" {
+					elm.Canonic = name
+				}
 			}
 		}
 	}
@@ -100,43 +104,74 @@ func confDHCP() {
 	code += "update-status-leases on;\n"
 	code += "use-host-decl-names on;\n"
 	code += "option domain-name \"rptp.org\";\n"
-	list := confListIP()
-	used := make(map[string]bool)
-	for _,elm := range list {
-		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & 0x200) == 0 {	//	Первичный адрес
-			ip := IPToShow(elm.IP)
-			var hosts []string
-			if unit,_ := UnitMapSys[elm.SysUnit]; unit != nil {
-				if name := confNameSymbols(unit.Namely); name != ""  && !used[name] {
-					hosts = append(hosts, name)
-					used[name] = true
+	code += "option static-route-rfc code 121 = string;\n"
+	code += "option static-route-win code 249 = string;\n"
+	code += "option wpad code 252 = text;\n"
+	code += "\n"
+	code += "shared-network RPTP {\n"
+	hosts := ""
+	list_ip := confListIP()
+	list_zone := DB.GetListElm("*", "IPZone", "(Roles&0x4)=0", "IP")
+	for nz := 0; nz < list_zone.Count(); nz++ {
+		if zone := list_zone.GetSet(nz); zone != nil {
+			pic := "(192)(168)(\\d\\d\\d)(\\d\\d\\d)"
+			if match := lik.RegExParse(zone.GetString("IP"), pic); match != nil {
+				ip1 := lik.StrToInt(match[1])
+				ip2 := lik.StrToInt(match[2])
+				ip3 := lik.StrToInt(match[3])
+				ipp := match[1] + match[2] + match[3]
+				ip13 := fmt.Sprintf("%d.%d.%d", ip1, ip2, ip3)
+				code += fmt.Sprintf("	subnet %s.0 netmask 255.255.255.0 {\n", ip13)
+				code += fmt.Sprintf("		option ntp-servers 192.168.234.62;\n")
+				code += fmt.Sprintf("		option time-servers 192.168.234.62;\n")
+				code += fmt.Sprintf("		option domain-name-servers 192.168.234.62;\n")
+				code += fmt.Sprintf("		option netbios-name-servers 192.168.234.62;\n")
+				code += fmt.Sprintf("		option broadcast-address %s.255;\n", ip13)
+				code += fmt.Sprintf("		option subnet-mask 255.255.255.0;\n")
+				code += fmt.Sprintf("		option wpad \"http://192.168.234.62/wpad.dat\";\n")
+				code += fmt.Sprintf("		option netbios-node-type 4;\n")
+				code += fmt.Sprintf("		option routers %s.3;\n", ip13)
+				if ip3 == 200 {
+					code += fmt.Sprintf("		range %s.16 %s.62;\n", ip13, ip13)
 				}
-			}
-			names := strings.Split(confNameSymbols(elm.Namely), ",")
-			for _,name := range names {
-				if name != ""  && !used[name] {
-					hosts = append(hosts, name)
-					used[name] = true
+				if ip3 == 229 {
+					option := confClassLess()
+					code += fmt.Sprintf("		option static-route-rfc %s;\n", option)
+					code += fmt.Sprintf("		option static-route-win %s;\n", option)
 				}
-			}
-			if len(hosts) == 0 {
-				if name := strings.Replace(ip, ".", "-", -1); name != ""  && !used[name] {
-					hosts = append(hosts, name)
-					used[name] = true
+				code += fmt.Sprintf("	}\n")
+				for _,elm := range list_ip {
+					if match := lik.RegExParse(elm.IP, ipp + "(\\d\\d\\d)"); match != nil {
+						ip4 := lik.StrToInt(match[1])
+						if ip4 > 0 && elm.MAC != "" && elm.Canonic != "" {
+							hosts += fmt.Sprintf("host %s {\n", elm.Canonic)
+							hosts += fmt.Sprintf("	hardware ethernet %s;\n", MACToShow(elm.MAC))
+							hosts += fmt.Sprintf("	fixed-address %s.%d;\n", ip13, ip4)
+							hosts += fmt.Sprintf("}\n")
+						}
+					}
 				}
-			}
-			for _,name := range hosts {
-				code += fmt.Sprintf("%s.rptp.org.	IN	A	%s\n", name, ip)
 			}
 		}
 	}
-	if confWrite("/etc/lik/rptp.org.zone", code) {
+	code += "}\n"
+	code += hosts
+	if confWrite("/etc/lik/dhcpd.conf", code) {
 		if host,_ := os.Hostname(); strings.ToLower(host) == "root2" {
 			if cmd := exec.Command("/etc/init.d/bind9 restart"); cmd != nil {
 				cmd.Run()
 			}
 		}
 	}
+}
+
+func confClassLess() string {
+	//my $routes = {
+	//	#'0.0.0.0/0'     => '10.10.124.10', # default route
+	//'10.62.155.0/24'  => '192.168.229.3',
+	//'192.168.0.0/16'  => '192.168.229.3',
+	//};
+	return "10:c0:a8:c0:a8:e5:03:18:0a:3e:9b:c0:a8:e5:03"
 }
 
 func confGate() {

@@ -19,6 +19,7 @@ type ElmIP struct {
 
 	OnlineMAC string
 	SeekOn    time.Time
+	Canonic	  string
 }
 
 var IPMapSys map[lik.IDB]*ElmIP
