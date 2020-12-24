@@ -13,9 +13,7 @@ import (
 
 func main() {
 	lik.SetLevelInf()
-	host,_ := os.Hostname()
-	host = strings.ToLower(host)
-	if host == "shaman" {
+	if host,_ := os.Hostname(); strings.ToLower(host) == "shaman" {
 		base.HostServ = "192.168.234.62"
 	}
 	lik.SayError("System started")

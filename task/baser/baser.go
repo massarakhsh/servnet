@@ -9,31 +9,31 @@ import (
 
 type Baser struct {
 	task.Task
-	OnAlarm   bool
-	OffAlarm  bool
-	TimeAlarm time.Time
+	LastTimeAlarm time.Time
 }
 
 func StartBaser() {
 	go func() {
-		iper := &Baser{}
+		iper := &Baser{ LastTimeAlarm: time.Now() }
 		iper.Initialize("Baser", iper)
 	}()
 }
 
 func (it *Baser) DoStep() {
-	on := lik.StrToInt(base.GetParm("LikSrvAlarm")) > 0
-	if on {
-		it.OnAlarm = true
-		it.OffAlarm = false
-	} else if it.OnAlarm {
-		it.OnAlarm = false
-		it.OffAlarm = true
-		it.TimeAlarm = time.Now()
-	} else if it.OffAlarm && time.Now().Sub(it.TimeAlarm) > time.Second*5 {
-		it.OffAlarm = false
-		lik.SayInfo("ALARM!")
-		//base.LoadTables()
+	if lik.StrToInt(base.GetParm("LikSrvAlarm")) > 0 {
+		base.SetParm("LikSrvAlarm", "0")
+		base.DBNetUpdated = true
+	} else if time.Now().Sub(it.LastTimeAlarm) > base.TimeoutFull {
+		it.doAlarm()
+	} else if base.DBNetUpdated && time.Now().Sub(it.LastTimeAlarm) > base.TimeoutAlarm {
+		it.doAlarm()
 	}
 	it.SetPause(time.Millisecond * 500)
 }
+
+func (it *Baser) doAlarm() {
+	it.LastTimeAlarm = time.Now()
+	base.LoadTables()
+	it.LastTimeAlarm = time.Now()
+}
+

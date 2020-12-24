@@ -12,6 +12,7 @@ type ElmIP struct {
 	Roles  int
 	IP     string
 	MAC    string
+	Namely	string
 	TimeOn  int
 	TimeOff int
 	SysUnit	lik.IDB
@@ -38,6 +39,7 @@ func LoadIP() {
 					DeleteElm("IP", sys)
 				} else {
 					it := AddIP(sys, ip, elm.GetString("MAC"), elm.GetInt("Roles"))
+					it.Namely = elm.GetString("Namely")
 					it.TimeOn = elm.GetInt("TimeOn")
 					it.TimeOff = elm.GetInt("TimeOff")
 					it.SysUnit = elm.GetIDB("SysUnit")

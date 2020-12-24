@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/lik/likbase"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -15,6 +17,7 @@ const (
 var dbLock sync.Mutex
 var dbOk bool
 var DB likbase.DBaser
+var DBNetUpdated = false
 
 func OpenDB(serv string, name string, user string, pass string) bool {
 	likbase.FId = "SysNum"
@@ -47,7 +50,9 @@ func WaitDB() bool {
 }
 
 func LoadTables() {
+	fmt.Println("LoadTables")
 	LockDB()
+	DBNetUpdated = false
 	dbOk = false
 	InitAsk()
 	LoadUnit()
@@ -55,6 +60,9 @@ func LoadTables() {
 	LoadIP()
 	LoadPing()
 	NetLink()
+	if host,_ := os.Hostname(); strings.ToLower(host) == "root" || true {
+		Configurate()
+	}
 	dbOk = true
 	UnlockDB()
 }
@@ -133,3 +141,4 @@ func AddEvent(ip string, mac string, namely string, formula string) {
 		lik.SayInfo(fmt.Sprintf("%s %s: %s", formula, namely, who))
 	}
 }
+
