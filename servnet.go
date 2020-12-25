@@ -17,8 +17,11 @@ func main() {
 		base.HostServ = "192.168.234.62"
 	}
 	lik.SayError("System started")
-	base.HostModes = base.MODE_BASE | base.MODE_PING | base.MODE_ARP | base.MODE_REAL
-	//base.HostModes = base.MODE_ARP
+	base.HostModes = 0
+	base.HostModes |= base.MODE_BASE
+	base.HostModes |= base.MODE_PING
+	base.HostModes |= base.MODE_ARP
+	base.HostModes |= base.MODE_REAL
 	if !getArgs() {
 		return
 	}
