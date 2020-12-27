@@ -7,6 +7,7 @@ var HostBase = "rptp"
 var HostUser = "rptp"
 var HostPass = "Shaman1961"
 var HostModes = 0
+var HostName = ""
 
 var DebugLevel = 1
 var IsStoping = false

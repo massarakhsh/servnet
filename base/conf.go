@@ -10,52 +10,53 @@ import (
 	"strings"
 )
 
-type hostAddress struct {
+type confAddress struct {
 	IP		string
 	MAC		string
 	Name	string
 }
 
-var hostList []*hostAddress
-var hostMapIP map[string]*hostAddress
-var hostListIP []*hostAddress
-var hostMapMAC map[string]*hostAddress
-var hostListMAC []*hostAddress
-var hostMapName map[string]*hostAddress
-var hostListName []*hostAddress
+var confList []*confAddress
+var confMapIP map[string]*confAddress
+var confListIP []*confAddress
+var confMapMAC map[string]*confAddress
+var confListMAC []*confAddress
+var confMapName map[string]*confAddress
+var confListName []*confAddress
 
 func Configurate() {
-	confLoad()
-	if confDirect("/etc/lik/rptp.org.zone") ||
-		confReverse("/etc/lik/192.168.rev") {
-		if host,_ := os.Hostname(); strings.ToLower(host) == "root2" {
-			if cmd := exec.Command("/etc/init.d/bind9 restart"); cmd != nil {
-				cmd.Run()
-			}
+	confLoadAddress()
+	if confDirect("/etc/lik/rptp.org.zone") || confReverse("/etc/lik/192.168.rev") {
+		if HostName == "root2" {
+			confExecute("/etc/init.d/bind9 restart")
 		}
 	}
 	if confDHCP("/etc/lik/dhcpd.conf") {
-		if host,_ := os.Hostname(); strings.ToLower(host) == "root2" {
-			if cmd := exec.Command("/etc/init.d/isc-dhcp-server restart"); cmd != nil {
-				cmd.Run()
-			}
+		if HostName == "root2" {
+			confExecute("/etc/init.d/isc-dhcp-server restart")
 		}
 	}
 	if confGate("/etc/lik/gatelist.sh") {
-		if host,_ := os.Hostname(); strings.ToLower(host) == "root2" {
-			if cmd := exec.Command("/etc/iptables/iptables.sh"); cmd != nil {
-				cmd.Run()
-			}
+		if HostName == "root2" {
+			confExecute("/etc/iptables/iptables.sh")
 		}
+	}
+	confLoadResourses()
+	if confSamba("root", "/etc/lik/public.conf") {
+		if HostName == "root2" {
+			confExecute("/etc/init.d/smbd restart")
+		}
+	}
+	if confSamba("master", "/etc/lik/public_m.conf") {
 	}
 }
 
-func confLoad() {
-	hostList = []*hostAddress{}
-	hostMapIP = make(map[string]*hostAddress)
-	hostMapMAC = make(map[string]*hostAddress)
-	hostMapName = make(map[string]*hostAddress)
-	list := confListIP()
+func confLoadAddress() {
+	confList = []*confAddress{}
+	confMapIP = make(map[string]*confAddress)
+	confMapMAC = make(map[string]*confAddress)
+	confMapName = make(map[string]*confAddress)
+	list := confBuildList()
 	for _,elm := range list {
 		elm.Host = ""
 		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & 0x200) == 0 {	//	Первичный адрес
@@ -79,40 +80,50 @@ func confLoad() {
 			}
 		}
 	}
-	hostListIP = []*hostAddress{}
-	for _,host := range hostMapIP {
-		hostListIP = append(hostListIP, host)
+	confListIP = []*confAddress{}
+	for _,host := range confMapIP {
+		confListIP = append(confListIP, host)
 	}
-	sort.SliceStable(hostListIP, func(i, j int) bool {
-		return hostListIP[i].IP < hostListIP[j].IP
+	sort.SliceStable(confListIP, func(i, j int) bool {
+		return confListIP[i].IP < confListIP[j].IP
 	})
-	hostListMAC = []*hostAddress{}
-	for _,host := range hostMapMAC {
-		hostListMAC = append(hostListMAC, host)
+	confListMAC = []*confAddress{}
+	for _,host := range confMapMAC {
+		confListMAC = append(confListMAC, host)
 	}
-	sort.SliceStable(hostListMAC, func(i, j int) bool {
-		return hostListMAC[i].MAC < hostListMAC[j].MAC
+	sort.SliceStable(confListMAC, func(i, j int) bool {
+		return confListMAC[i].MAC < confListMAC[j].MAC
 	})
-	hostListName = []*hostAddress{}
-	for _,host := range hostMapName {
-		hostListName = append(hostListName, host)
+	confListName = []*confAddress{}
+	for _,host := range confMapName {
+		confListName = append(confListName, host)
 	}
-	sort.SliceStable(hostListName, func(i, j int) bool {
-		return hostListName[i].Name < hostListName[j].Name
+	sort.SliceStable(confListName, func(i, j int) bool {
+		return confListName[i].Name < confListName[j].Name
 	})
 }
 
+func confLoadResourses() {
+
+}
+
+func confExecute(cmd string) {
+	if exe := exec.Command(cmd); exe != nil {
+		exe.Run()
+	}
+}
+
 func confLoadAdd(ip string, mac string, name string) {
-	host := &hostAddress{IP: ip, MAC: mac, Name: name }
-	hostList = append(hostList, host)
+	host := &confAddress{IP: ip, MAC: mac, Name: name }
+	confList = append(confList, host)
 	if ip != "" {
-		hostMapIP[ip] = host
+		confMapIP[ip] = host
 	}
 	if mac != "" {
-		hostMapMAC[mac] = host
+		confMapMAC[mac] = host
 	}
 	if ip != "" {
-		hostMapName[name] = host
+		confMapName[name] = host
 	}
 }
 
@@ -122,7 +133,7 @@ func confDirect(namefile string) bool {
 	code += "rptp.org.	IN	NS	root.rptp.org.\n"
 	code += "rptp.org.	IN	A	192.168.234.62\n"
 	code += ";\n"
-	for _,host := range hostListName {
+	for _,host := range confListName {
 		if host.Name != "" && host.IP != "" {
 			code += fmt.Sprintf("%s.rptp.org.	IN	A	%s\n", host.Name, IPToShow(host.IP))
 		}
@@ -134,7 +145,7 @@ func confReverse(namefile string) bool {
 	code := "$TTL	38400\n"
 	code += "168.192.in-addr.arpa.	IN	NS	root.rptp.org.\n"
 	code += ";\n"
-	for _,host := range hostListIP {
+	for _,host := range confListIP {
 		if match := lik.RegExParse(host.IP, "(192)(168)(\\d\\d\\d)(\\d\\d\\d)"); match != nil && host.Name != "" {
 			ip3 := lik.StrToInt(match[3])
 			ip4 := lik.StrToInt(match[4])
@@ -186,7 +197,7 @@ func confDHCP(namefile string) bool {
 					code += fmt.Sprintf("		option static-route-win %s;\n", option)
 				}
 				code += fmt.Sprintf("	}\n")
-				for _,host := range hostMapMAC {
+				for _,host := range confMapMAC {
 					if match := lik.RegExParse(host.IP, ipp + "(\\d\\d\\d)"); match != nil {
 						ip4 := lik.StrToInt(match[1])
 						if ip4 > 0 && host.IP != "" && host.MAC != "" {
@@ -220,7 +231,7 @@ func confClassLess() string {
 
 func confGate(namefile string) bool {
 	code := "#!/bin/bash\n"
-	list := confListIP()
+	list := confBuildList()
 	for _,elm := range list {
 		if elm.IP > "" && (elm.Roles & 0x8) != 0 {	//	Шлюз
 			ip := IPToShow(elm.IP)
@@ -232,6 +243,11 @@ func confGate(namefile string) bool {
 	return confWrite(namefile, code)
 }
 
+func confSamba(server string, namefile string) bool {
+	code := ""
+	return confWrite(namefile, code)
+}
+
 func confNameSymbols(name string) string {
 	name = strings.ToLower(name)
 	name = lik.Transliterate(name)
@@ -239,7 +255,7 @@ func confNameSymbols(name string) string {
 	return name
 }
 
-func confListIP() []*ElmIP {
+func confBuildList() []*ElmIP {
 	var ips []*ElmIP
 	for _,elm := range IPMapSys {
 		ips = append(ips, elm)
