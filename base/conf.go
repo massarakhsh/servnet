@@ -178,6 +178,9 @@ func confDHCP(namefile string) bool {
 	code += "\n"
 	code += "shared-network RPTP {\n"
 	hosts := ""
+	use_ip := make(map[string]bool)
+	use_mac := make(map[string]bool)
+	use_name := make(map[string]bool)
 	list_zone := DB.GetListElm("*", "IPZone", "(Roles&0x4)=0", "IP")
 	for nz := 0; nz < list_zone.Count(); nz++ {
 		if zone := list_zone.GetSet(nz); zone != nil {
@@ -211,13 +214,24 @@ func confDHCP(namefile string) bool {
 					if match := lik.RegExParse(host.IP, ipp + "(\\d\\d\\d)"); match != nil {
 						ip4 := lik.StrToInt(match[1])
 						if ip4 > 0 && host.IP != "" && host.MAC != "" {
+							ips := fmt.Sprintf("%s.%d", ip13, ip4)
+							mac := host.MAC
 							name := host.Name
+							if use_ip[ips] {
+								continue
+							}
+							if use_mac[mac] {
+								continue
+							}
 							if name == "" {
 								name = "ip" + host.IP
 							}
+							for use_name[name] {
+								name += "_"
+							}
 							hosts += fmt.Sprintf("host %s {\n", name)
-							hosts += fmt.Sprintf("	hardware ethernet %s;\n", MACToShow(host.MAC))
-							hosts += fmt.Sprintf("	fixed-address %s.%d;\n", ip13, ip4)
+							hosts += fmt.Sprintf("	hardware ethernet %s;\n", MACToShow(mac))
+							hosts += fmt.Sprintf("	fixed-address %s;\n", ips)
 							hosts += fmt.Sprintf("}\n")
 						}
 					}
