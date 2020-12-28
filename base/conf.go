@@ -31,7 +31,7 @@ func Configurate() {
 			confExecute("/etc/init.d/bind9 restart")
 		}
 	}
-	if confDHCP("/etc/dhcp/dhcp.conf2") {
+	if confDHCP("/etc/dhcp/dhcpd.conf2") {
 		if HostName == "root2" {
 			confExecute("/etc/init.d/isc-dhcp-server restart")
 		}
@@ -122,7 +122,7 @@ func confLoadAdd(ip string, mac string, name string) {
 	host := &confAddress{IP: ip, MAC: mac, Name: name }
 	confList = append(confList, host)
 	if ip != "" {
-		if confMapIP[name] == nil || ip != "192168234062" || host.Name == "root" {
+		if confMapIP[ip] == nil || ip != "192168234062" || host.Name == "root" {
 			confMapIP[ip] = host
 		}
 	}
@@ -227,7 +227,7 @@ func confDHCP(namefile string) bool {
 	}
 	code += "}\n"
 	code += hosts
-	return confWrite("/etc/lik/dhcpd.conf", code)
+	return confWrite(namefile, code)
 }
 
 func confClassLess() string {
