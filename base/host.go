@@ -6,7 +6,7 @@ var HostServ = "localhost"
 var HostBase = "rptp"
 var HostUser = "rptp"
 var HostPass = "Shaman1961"
-var HostModes = 0
+var HostModes = 1
 var HostName = ""
 
 var DebugLevel = 0

@@ -16,7 +16,7 @@ func main() {
 	if host,err := os.Hostname(); err == nil {
 		base.HostName = strings.ToLower(host)
 	}
-	if base.HostName == "shaman" {
+	if base.HostName == "shaman" || true {
 		base.HostServ = "192.168.234.62"
 	}
 	lik.SayError("System started on " + base.HostName)

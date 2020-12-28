@@ -82,10 +82,12 @@ func (it *ARPer) callRouter() {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			for _, line := range lines {
-				if match := lik.RegExParse(line, "(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
-					ip := base.IPFromShow(match[1])
-					mac := base.MACFromShow(match[2])
-					it.addElm(ip, mac)
+				if match := lik.RegExParse(line, "\\s+(\\w+)\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
+					if lik.RegExCompare(match[1], "(c|C)") {
+						ip := base.IPFromShow(match[2])
+						mac := base.MACFromShow(match[3])
+						it.addElm(ip, mac)
+					}
 				}
 			}
 		}
