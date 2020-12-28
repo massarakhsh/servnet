@@ -69,12 +69,14 @@ func confLoadAddress() {
 					elm.Host = name
 				}
 			}
-			names := strings.Split(elm.Namely, ",")
-			for _,name := range names {
-				if name = confNameSymbols(name); name != "" {
-					confLoadAdd(elm.IP, elm.MAC, name)
-					if elm.Host == "" {
-						elm.Host = name
+			if match := lik.RegExParse(elm.Namely, "^=(.+)"); match != nil {
+				names := strings.Split(match[1], ",")
+				for _, name := range names {
+					if name = confNameSymbols(name); name != "" {
+						confLoadAdd(elm.IP, elm.MAC, name)
+						if elm.Host == "" {
+							elm.Host = name
+						}
 					}
 				}
 			}
@@ -120,7 +122,7 @@ func confLoadAdd(ip string, mac string, name string) {
 	host := &confAddress{IP: ip, MAC: mac, Name: name }
 	confList = append(confList, host)
 	if ip != "" {
-		if confMapIP[name] == nil || ip != "19216823462" || host.Name == "root" {
+		if confMapIP[name] == nil || ip != "192168234062" || host.Name == "root" {
 			confMapIP[ip] = host
 		}
 	}
@@ -128,7 +130,7 @@ func confLoadAdd(ip string, mac string, name string) {
 		confMapMAC[mac] = host
 	}
 	if name != "" {
-		if confMapName[name] == nil || name != "root" || host.IP == "19216823462" {
+		if confMapName[name] == nil || name != "root" || host.IP == "192168234062" {
 			confMapName[name] = host
 		}
 	}
