@@ -26,28 +26,28 @@ var confListName []*confAddress
 
 func Configurate() {
 	confLoadAddress()
-	if confDirect("/etc/lik/rptp.org.zone") || confReverse("/etc/lik/192.168.rev") {
+	if confDirect("/etc/bind/rptp.org.zone2") || confReverse("/etc/bind/192.168.rev2") {
 		if HostName == "root2" {
 			confExecute("/etc/init.d/bind9 restart")
 		}
 	}
-	if confDHCP("/etc/lik/dhcpd.conf") {
+	if confDHCP("/etc/dhcp/dhcp.conf2") {
 		if HostName == "root2" {
 			confExecute("/etc/init.d/isc-dhcp-server restart")
 		}
 	}
-	if confGate("/etc/lik/gatelist.sh") {
+	if confGate("/etc/iptables/gatelist.sh2") {
 		if HostName == "root2" {
 			confExecute("/etc/iptables/iptables.sh")
 		}
 	}
 	confLoadResourses()
-	if confSamba("root", "/etc/lik/public.conf") {
+	if confSamba("root", "/etc/samba/public.conf2") {
 		if HostName == "root2" {
 			confExecute("/etc/init.d/smbd restart")
 		}
 	}
-	if confSamba("master", "/etc/lik/public_m.conf") {
+	if confSamba("master", "/etc/samba/public_m.conf2") {
 	}
 }
 
@@ -244,7 +244,7 @@ func confGate(namefile string) bool {
 }
 
 func confSamba(server string, namefile string) bool {
-	code := ""
+	code := "# Samba lisr access\n"
 	return confWrite(namefile, code)
 }
 
