@@ -69,7 +69,6 @@ func confLoadAddress() {
 					elm.Host = name
 				}
 			}
-			//names := strings.Split(confNameSymbols(elm.Namely), ",")
 			names := strings.Split(elm.Namely, ",")
 			for _,name := range names {
 				if name = confNameSymbols(name); name != "" {
@@ -121,13 +120,17 @@ func confLoadAdd(ip string, mac string, name string) {
 	host := &confAddress{IP: ip, MAC: mac, Name: name }
 	confList = append(confList, host)
 	if ip != "" {
-		confMapIP[ip] = host
+		if confMapIP[name] == nil || ip != "19216823462" || host.Name == "root" {
+			confMapIP[ip] = host
+		}
 	}
 	if mac != "" {
 		confMapMAC[mac] = host
 	}
-	if ip != "" {
-		confMapName[name] = host
+	if name != "" {
+		if confMapName[name] == nil || name != "root" || host.IP == "19216823462" {
+			confMapName[name] = host
+		}
 	}
 }
 

@@ -50,7 +50,9 @@ func WaitDB() bool {
 }
 
 func LoadTables() {
-	fmt.Println("LoadTables")
+	if DebugLevel > 0 {
+		fmt.Println("LoadTables")
+	}
 	LockDB()
 	DBNetUpdated = false
 	dbOk = false

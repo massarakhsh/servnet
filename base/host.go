@@ -9,7 +9,7 @@ var HostPass = "Shaman1961"
 var HostModes = 0
 var HostName = ""
 
-var DebugLevel = 1
+var DebugLevel = 0
 var IsStoping = false
 
 const MODE_BASE = 0x1

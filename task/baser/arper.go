@@ -30,8 +30,12 @@ func StartARP() {
 
 func (it *ARPer) DoStep() {
 	it.Elms = []ArpElm{}
-	it.callLocal()
-	it.callRoot()
+	if base.HostName == "root" {
+		it.callLocal()
+	}
+	if base.HostName != "root" {
+		it.callRoot()
+	}
 	it.callRouter()
 	//it.callSwitch()
 	base.LockDB()
@@ -59,6 +63,18 @@ func (it *ARPer) callLocal() {
 }
 
 func (it *ARPer) callRoot() {
+	if touch := likssh.Open("192.168.234.62:22", "root", "", "root.opn"); touch != nil {
+		if answer := touch.Execute("arp -an"); answer != "" {
+			lines := strings.Split(answer, "\n")
+			for _, line := range lines {
+				if match := lik.RegExParse(line, "(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
+					ip := base.IPFromShow(match[1])
+					mac := base.MACFromShow(match[2])
+					it.addElm(ip, mac)
+				}
+			}
+		}
+	}
 }
 
 func (it *ARPer) callRouter() {
@@ -66,7 +82,7 @@ func (it *ARPer) callRouter() {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			for _, line := range lines {
-				if match := lik.RegExParse(line, "\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+)\\s+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)\\s+"); match != nil {
+				if match := lik.RegExParse(line, "(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
 					ip := base.IPFromShow(match[1])
 					mac := base.MACFromShow(match[2])
 					it.addElm(ip, mac)
@@ -76,7 +92,7 @@ func (it *ARPer) callRouter() {
 		if answer := touch.Execute("interface bridge host print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			for _, line := range lines {
-				if match := lik.RegExParse(line, "\\s+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)\\s+"); match != nil {
+				if match := lik.RegExParse(line, "(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
 					mac := base.MACFromShow(match[1])
 					it.addElm("", mac)
 				}

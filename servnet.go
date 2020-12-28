@@ -24,7 +24,9 @@ func main() {
 	base.HostModes |= base.MODE_BASE
 	base.HostModes |= base.MODE_PING
 	base.HostModes |= base.MODE_ARP
-	base.HostModes |= base.MODE_REAL
+	if base.HostName != "shaman" {
+		base.HostModes |= base.MODE_REAL
+	}
 	if !getArgs() {
 		return
 	}
