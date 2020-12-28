@@ -26,8 +26,8 @@ var confListName []*confAddress
 
 func Configurate() {
 	confLoadAddress()
-	if confDirect("/etc/bind/rptp.org.zone2") || confReverse("/etc/bind/192.168.rev2") {
-		if HostName == "root2" {
+	if confDirect("/etc/bind/rptp.org.zone") || confReverse("/etc/bind/192.168.rev") {
+		if HostName == "root" {
 			confExecute("/etc/init.d/bind9 restart")
 		}
 	}
@@ -36,8 +36,8 @@ func Configurate() {
 			confExecute("/etc/init.d/isc-dhcp-server restart")
 		}
 	}
-	if confGate("/etc/iptables/gatelist.sh2") {
-		if HostName == "root2" {
+	if confGate("/etc/iptables/gatelist.sh") {
+		if HostName == "root" {
 			confExecute("/etc/iptables/iptables.sh")
 		}
 	}
