@@ -19,7 +19,7 @@ func main() {
 	if base.HostName == "shaman" {
 		base.HostServ = "192.168.234.62"
 	}
-	lik.SayError("System started")
+	lik.SayError("System started on " + base.HostName)
 	base.HostModes = 0
 	base.HostModes |= base.MODE_BASE
 	base.HostModes |= base.MODE_PING
