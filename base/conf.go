@@ -229,6 +229,9 @@ func confDHCP(namefile string) bool {
 							for use_name[name] {
 								name += "_"
 							}
+							use_ip[ips] = true
+							use_mac[mac] = true
+							use_name[name] = true
 							hosts += fmt.Sprintf("host %s {\n", name)
 							hosts += fmt.Sprintf("	hardware ethernet %s;\n", MACToShow(mac))
 							hosts += fmt.Sprintf("	fixed-address %s;\n", ips)
