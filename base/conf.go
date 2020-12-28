@@ -59,6 +59,9 @@ func confLoadAddress() {
 	list := confBuildList()
 	for _,elm := range list {
 		elm.Host = ""
+		if elm.IP == "192168234062" {
+			elm.IP += ""
+		}
 		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & 0x200) == 0 {	//	Первичный адрес
 			if unit,_ := UnitMapSys[elm.SysUnit]; unit != nil {
 				if name := confNameSymbols(unit.Namely); name != ""  {
@@ -66,9 +69,10 @@ func confLoadAddress() {
 					elm.Host = name
 				}
 			}
-			names := strings.Split(confNameSymbols(elm.Namely), ",")
+			//names := strings.Split(confNameSymbols(elm.Namely), ",")
+			names := strings.Split(elm.Namely, ",")
 			for _,name := range names {
-				if name != "" {
+				if name = confNameSymbols(name); name != "" {
 					confLoadAdd(elm.IP, elm.MAC, name)
 					if elm.Host == "" {
 						elm.Host = name
@@ -143,6 +147,7 @@ func confDirect(namefile string) bool {
 
 func confReverse(namefile string) bool {
 	code := "$TTL	38400\n"
+	code += "168.192.in-addr.arpa.	IN	SOA	root.rptp.org.	master.rptp.org. ( 1330323963 10800 3600 604800 38400 )\n"
 	code += "168.192.in-addr.arpa.	IN	NS	root.rptp.org.\n"
 	code += ";\n"
 	for _,host := range confListIP {
