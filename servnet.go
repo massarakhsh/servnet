@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/task/baser"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -39,7 +41,7 @@ func main() {
 		cmd = strings.ToUpper(base.HostSignal[:1])
 	}
 	if pidgo > 0 {
-		if prc, err := os.FindProcess(pidgo); prc != nil && err == nil {
+		if prc := findActiveProcess(pidgo); prc != nil {
 			if cmd == "S" {
 				lik.SayWarning("Send stop process")
 				prc.Signal(syscall.Signal(23))
@@ -120,7 +122,9 @@ func getArgs() bool {
 func getActiveProcess() int {
 	pid := 0
 	if data, err := ioutil.ReadFile(pidFile); err == nil {
-		pid = lik.StrToInt(string(data))
+		if match := lik.RegExParse(string(data), "(\\d+)"); match != nil {
+			pid = lik.StrToInt(match[1])
+		}
 	}
 	return pid
 }
@@ -132,6 +136,22 @@ func setActiveProcess(pid int) {
 		data = []byte(lik.IntToStr(pid))
 	}
 	ioutil.WriteFile(pidFile, data, 0777)
+}
+
+func findActiveProcess(pid int) *os.Process {
+	var prc *os.Process
+	spid := lik.IntToStr(pid)
+	if exe := exec.Command("ps --pid=" + spid); exe != nil {
+		var out bytes.Buffer
+		exe.Stdout = &out
+		exe.Run()
+		if answer := out.String(); strings.Contains(answer, spid) {
+			if pc, err := os.FindProcess(pid); pc != nil && err == nil {
+				prc = pc
+			}
+		}
+	}
+	return prc
 }
 
 //	Процесс ожидания и обработки сигналов
