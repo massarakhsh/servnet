@@ -58,7 +58,7 @@ func WaitDB() bool {
 
 func LoadTables() {
 	if DebugLevel > 0 {
-		fmt.Println("LoadTables")
+		lik.SayInfo("LoadTables")
 	}
 	LockDB()
 	DBNetUpdated = false
@@ -69,7 +69,7 @@ func LoadTables() {
 	LoadIP()
 	LoadPing()
 	NetLink()
-	if host,_ := os.Hostname(); strings.ToLower(host) == "root" || true {
+	if host,_ := os.Hostname(); strings.ToLower(host) == "root" {
 		Configurate()
 	}
 	dbOk = true
@@ -81,17 +81,17 @@ func GetElm(part string, id lik.IDB) lik.Seter {
 }
 
 func InsertElm(part string, sets lik.Seter) lik.IDB {
-	if HostVirtual { return 0 }
+	if ConfVirtual { return 0 }
 	return DB.InsertElm(part, sets)
 }
 
 func UpdateElm(part string, id lik.IDB, sets lik.Seter) bool {
-	if HostVirtual { return false }
+	if ConfVirtual { return false }
 	return DB.UpdateElm(part, id, sets)
 }
 
 func DeleteElm(part string, id lik.IDB) bool {
-	if HostVirtual { return false }
+	if ConfVirtual { return false }
 	return DB.DeleteElm(part, id)
 }
 

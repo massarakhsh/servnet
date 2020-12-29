@@ -26,8 +26,8 @@ func main() {
 		base.HostName = strings.ToLower(host)
 	}
 	if base.HostName == "shaman" {
-		base.HostServ = "192.168.234.62"
-		base.HostVirtual = true
+		base.ConfServ = "192.168.234.62"
+		base.ConfVirtual = true
 	}
 	lik.SayError("System started on " + base.HostName)
 
@@ -64,7 +64,7 @@ func main() {
 	signal.Notify(base.HostChan, syscall.SIGKILL, syscall.SIGTERM, syscall.Signal(23), syscall.Signal(25))
 
 	go waitSignal()
-	if !base.OpenDB(base.HostServ, base.HostBase, base.HostUser, base.HostPass) {
+	if !base.OpenDB(base.ConfServ, base.ConfBase, base.ConfUser, base.ConfPass) {
 		return
 	}
 	base.WaitDB()
@@ -80,24 +80,25 @@ func main() {
 	if getActiveProcess() == base.HostPid {
 		setActiveProcess(0)
 	}
+	lik.SayError("Done on " + base.HostName)
 }
 
 func getArgs() bool {
 	args, ok := lik.GetArgs(os.Args[1:])
 	if val := args.GetString("serv"); val != "" {
-		base.HostServ = val
+		base.ConfServ = val
 	}
 	if val := args.GetString("base"); val != "" {
-		base.HostBase = val
+		base.ConfBase = val
 	}
 	if val := args.GetString("user"); val != "" {
-		base.HostUser = val
+		base.ConfUser = val
 	}
 	if val := args.GetString("pass"); val != "" {
-		base.HostPass = val
+		base.ConfPass = val
 	}
 	if val := args.GetInt("virtual"); val > 0 {
-		base.HostVirtual = val > 0
+		base.ConfVirtual = val > 0
 	}
 	if val := args.GetString("signal"); val != "" {
 		base.HostSignal = val
