@@ -141,8 +141,7 @@ func setActiveProcess(pid int) {
 func findActiveProcess(pid int) *os.Process {
 	var prc *os.Process
 	spid := lik.IntToStr(pid)
-	//if exe := exec.Command("ps", "--pid=" + spid); exe != nil {
-	if exe := exec.Command("dir"); exe != nil {
+	if exe := exec.Command("ps", "--pid=" + spid); exe != nil {
 		var out bytes.Buffer
 		exe.Stdout = &out
 		exe.Run()
