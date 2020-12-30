@@ -44,10 +44,7 @@ func main() {
 		if prc := findActiveProcess(pidgo); prc != nil {
 			if cmd == "S" {
 				lik.SayWarning("Send stop process")
-				prc.Signal(syscall.Signal(23))
-			} else if cmd == "C" {
-				lik.SayWarning("Send continue process")
-				prc.Signal(syscall.Signal(25))
+				prc.Signal(syscall.SIGTERM)
 			} else {
 				lik.SayWarning("Send term process")
 				prc.Signal(syscall.SIGTERM)
@@ -159,9 +156,10 @@ func waitSignal() {
 	for {
 		signal := <-base.HostChan
 		if signal == syscall.Signal(23) {
-			//repo.ToPause = true
-		} else if signal == syscall.Signal(25) {
-			//repo.ToPause = false
+			base.IsStoping = true
+			break
+		//} else if signal == syscall.Signal(25) {
+		//	repo.ToPause = false
 		} else {
 			base.IsStoping = true
 			break
