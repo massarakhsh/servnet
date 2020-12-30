@@ -63,7 +63,7 @@ func (it *ARPer) callLocal() {
 }
 
 func (it *ARPer) callRoot() {
-	if touch := likssh.Open("192.168.234.62:22", "root", "", "root.opn"); touch != nil {
+	if touch := likssh.Open("192.168.234.62:22", "root", "", "var/root.opn"); touch != nil {
 		if answer := touch.Execute("arp -an"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			for _, line := range lines {
