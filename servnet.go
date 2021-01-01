@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/massarakhsh/servnet/base"
+	"github.com/massarakhsh/servnet/task/api"
 	"github.com/massarakhsh/servnet/task/baser"
 	"io/ioutil"
 	"os"
@@ -70,6 +71,13 @@ func main() {
 	baser.StartBaser()
 	baser.StartPinger()
 	baser.StartARP()
+	if base.ConfPort > 0 {
+		api.StartAPI()
+	}
+	go func() {
+		time.Sleep(time.Second * 10)
+		//base.IsStoping = true
+	}()
 
 	for !base.IsStoping {
 		time.Sleep(time.Second * 1)
@@ -98,6 +106,9 @@ func getArgs() bool {
 	}
 	if val := args.GetInt("virtual"); val > 0 {
 		base.ConfVirtual = val > 0
+	}
+	if val := args.GetInt("port"); val > 0 {
+		base.ConfPort = val
 	}
 	if val := args.GetString("signal"); val != "" {
 		base.HostSignal = val

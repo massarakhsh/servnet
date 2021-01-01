@@ -21,6 +21,7 @@ var PingSync sync.Mutex
 var PingList []*ElmPing
 var PingMapSys map[lik.IDB]*ElmPing
 var PingMapOld map[lik.IDB]*ElmPing
+var PingMapIP map[string][]*ElmPing
 var PingMapIM map[string]*ElmPing
 
 func LoadPing() {
@@ -29,6 +30,7 @@ func LoadPing() {
 		PingSync.Lock()
 		PingList = []*ElmPing{}
 		PingMapSys = make(map[lik.IDB]*ElmPing)
+		PingMapIP = make(map[string][]*ElmPing)
 		PingMapIM = make(map[string]*ElmPing)
 		for n := 0; n < list.Count(); n++ {
 			if elm := list.GetSet(n); elm != nil {
@@ -36,11 +38,17 @@ func LoadPing() {
 				ip := elm.GetString("IP")
 				mac := elm.GetString("MAC")
 				roles := elm.GetInt("Roles")
-				if it := AddPing(sys, ip, mac, roles); it == nil {
+				ton := elm.GetInt("TimeOn")
+				toff := elm.GetInt("TimeOff")
+				tlast := ton
+				if toff > ton { tlast = toff }
+				if (roles & ROLE_ONLINE) == 0 && time.Now().Sub(time.Unix(int64(tlast),0)) > TimeoutOffline {
+					DeleteElm("Ping", sys)
+				} else if it := AddPing(sys, ip, mac, roles); it == nil {
 					DeleteElm("Ping", sys)
 				} else {
-					it.TimeOn = elm.GetInt("TimeOn")
-					it.TimeOff = elm.GetInt("TimeOff")
+					it.TimeOn = ton
+					it.TimeOff = toff
 					if PingMapOld == nil {
 						it.SeekOn = time.Now()
 					} else if old := PingMapOld[sys]; old == nil {
@@ -58,8 +66,8 @@ func LoadPing() {
 
 func SetPingsOffline(ip string) {
 	PingSync.Lock()
-	for _, it := range PingMapSys {
-		if ip == "" || ip == it.IP {
+	if lip := PingMapIP[ip]; lip != nil {
+		for _, it := range lip {
 			if (it.Roles & ROLE_ONLINE) != 0 {
 				it.Roles ^= ROLE_ONLINE
 				it.TimeOff = int(time.Now().Unix())
@@ -114,7 +122,7 @@ func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
 	if ip != "" {
 		AddAsk(ip, (roles&ROLE_ONLINE) != 0)
 		if mac != "" {
-			if elm,_ := PingMapIM[ip+mac]; elm != nil {
+			if elm, _ := PingMapIM[ip+mac]; elm != nil {
 				return nil
 			}
 			it = &ElmPing{SysNum: sys, IP: ip, MAC: mac, Roles: roles}
@@ -123,6 +131,11 @@ func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
 				PingMapSys[sys] = it
 			}
 			PingMapIM[ip+mac] = it
+			if lip := PingMapIP[ip]; lip != nil {
+				PingMapIP[ip] = append(PingMapIP[ip], it)
+			} else {
+				PingMapIP[ip] = []*ElmPing{it}
+			}
 		}
 	}
 	return it

@@ -49,20 +49,19 @@ func (it *Pinger) pingExec(pit *base.ElmAsk) {
 
 func (it *Pinger) pingICMP(pit *base.ElmAsk) {
 	if pit.IP == "192168000016" {
-		pit.IP += ""
-	}
-	pinger, err := ping.NewPinger(base.IPToShow(pit.IP))
-	if err != nil {
+		it.pingSetOnline(pit, (time.Now().Minute() & 0x2) != 0)
+	} else if pinger, err := ping.NewPinger(base.IPToShow(pit.IP)); err == nil {
+		pinger.Count = 3
+		pinger.Timeout = time.Second * 1
+		pinger.SetPrivileged(true)
+		if err := pinger.Run(); err != nil {
+			return
+		}
+		stats := pinger.Statistics()
+		it.pingSetOnline(pit, stats.PacketsRecv > 0)
+	} else {
 		return
 	}
-	pinger.Count = 3
-	pinger.Timeout = time.Second * 1
-	pinger.SetPrivileged(true)
-	if err := pinger.Run(); err != nil {
-		return
-	}
-	stats := pinger.Statistics()
-	it.pingSetOnline(pit, stats.PacketsRecv > 0)
 	if base.DebugLevel > 1 {
 		text := fmt.Sprintf("Ping %s", base.IPToShow(pit.IP))
 		diff := int(pit.At.Sub(time.Now()).Seconds())

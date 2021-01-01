@@ -66,7 +66,7 @@ func AskPingPush(pit *ElmAsk) {
 	AskSync.Lock()
 	sec := 15 + rand.Intn(10)
 	if !pit.Online {
-		sec += 180 + rand.Intn(60)
+		sec += 60 + rand.Intn(60)
 	}
 	askMove(pit, sec)
 	AskSync.Unlock()

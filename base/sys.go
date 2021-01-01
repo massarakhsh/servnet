@@ -16,44 +16,44 @@ type sysAddress struct {
 	Name	string
 }
 
-var confMapIP map[string]*sysAddress
-var confListIP []*sysAddress
-var confMapMAC map[string]*sysAddress
-var confListMAC []*sysAddress
-var confMapName map[string]*sysAddress
-var confListName []*sysAddress
+var sysMapIP map[string]*sysAddress
+var sysListIP []*sysAddress
+var sysMapMAC map[string]*sysAddress
+var sysListMAC []*sysAddress
+var sysMapName map[string]*sysAddress
+var sysListName []*sysAddress
 
-func Configurate() {
-	confLoadAddress()
-	if confDirect("/etc/bind/rptp.org.zone") || confReverse("/etc/bind/192.168.rev") {
+func SysUpdate() {
+	sysLoadAddress()
+	if sysUpdateDirect("/etc/bind/rptp.org.zone") || sysUpdateReverse("/etc/bind/192.168.rev") {
 		if HostName == "root" {
-			confExecute("/etc/init.d/bind9 restart")
+			sysExecute("/etc/init.d/bind9 restart")
 		}
 	}
-	if confDHCP("/etc/dhcp/dhcpd.conf2") {
+	if sysUpdateDHCP("/etc/dhcp/dhcpd.conf2") {
 		if HostName == "root2" {
-			confExecute("/etc/init.d/isc-dhcp-server restart")
+			sysExecute("/etc/init.d/isc-dhcp-server restart")
 		}
 	}
-	if confGate("/etc/iptables/gatelist.sh") {
+	if sysUpdateGate("/etc/iptables/gatelist.sh") {
 		if HostName == "root" {
-			confExecute("/etc/iptables/iptables.sh")
+			sysExecute("/etc/iptables/iptables.sh")
 		}
 	}
-	confLoadResourses()
-	if confSamba("root", "/etc/samba/public.conf2") {
+	sysLoadResourses()
+	if sysUpdateSamba("root", "/etc/samba/public.conf2") {
 		if HostName == "root2" {
-			confExecute("/etc/init.d/smbd restart")
+			sysExecute("/etc/init.d/smbd restart")
 		}
 	}
-	if confSamba("master", "/etc/samba/public_m.conf2") {
+	if sysUpdateSamba("master", "/etc/samba/public_m.conf2") {
 	}
 }
 
-func confLoadAddress() {
-	confMapIP = make(map[string]*sysAddress)
-	confMapMAC = make(map[string]*sysAddress)
-	confMapName = make(map[string]*sysAddress)
+func sysLoadAddress() {
+	sysMapIP = make(map[string]*sysAddress)
+	sysMapMAC = make(map[string]*sysAddress)
+	sysMapName = make(map[string]*sysAddress)
 	list := confBuildList()
 	for _,elm := range list {
 		elm.Host = ""
@@ -63,7 +63,7 @@ func confLoadAddress() {
 		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & 0x200) == 0 {	//	Первичный адрес
 			if unit,_ := UnitMapSys[elm.SysUnit]; unit != nil {
 				if name := confNameSymbols(unit.Namely); name != ""  {
-					confLoadAdd(elm.IP, elm.MAC, name)
+					sysAddHost(elm.IP, elm.MAC, name)
 					elm.Host = name
 				}
 			}
@@ -71,7 +71,7 @@ func confLoadAddress() {
 				names := strings.Split(match[1], ",")
 				for _, name := range names {
 					if name = confNameSymbols(name); name != "" {
-						confLoadAdd(elm.IP, elm.MAC, name)
+						sysAddHost(elm.IP, elm.MAC, name)
 						if elm.Host == "" {
 							elm.Host = name
 						}
@@ -79,67 +79,67 @@ func confLoadAddress() {
 				}
 			}
 			if elm.Host == "" {
-				confLoadAdd(elm.IP, elm.MAC, "")
+				sysAddHost(elm.IP, elm.MAC, "")
 			}
 		}
 	}
-	confListIP = []*sysAddress{}
-	for _,host := range confMapIP {
-		confListIP = append(confListIP, host)
+	sysListIP = []*sysAddress{}
+	for _,host := range sysMapIP {
+		sysListIP = append(sysListIP, host)
 	}
-	sort.SliceStable(confListIP, func(i, j int) bool {
-		return confListIP[i].IP < confListIP[j].IP
+	sort.SliceStable(sysListIP, func(i, j int) bool {
+		return sysListIP[i].IP < sysListIP[j].IP
 	})
-	confListMAC = []*sysAddress{}
-	for _,host := range confMapMAC {
-		confListMAC = append(confListMAC, host)
+	sysListMAC = []*sysAddress{}
+	for _,host := range sysMapMAC {
+		sysListMAC = append(sysListMAC, host)
 	}
-	sort.SliceStable(confListMAC, func(i, j int) bool {
-		return confListMAC[i].MAC < confListMAC[j].MAC
+	sort.SliceStable(sysListMAC, func(i, j int) bool {
+		return sysListMAC[i].MAC < sysListMAC[j].MAC
 	})
-	confListName = []*sysAddress{}
-	for _,host := range confMapName {
-		confListName = append(confListName, host)
+	sysListName = []*sysAddress{}
+	for _,host := range sysMapName {
+		sysListName = append(sysListName, host)
 	}
-	sort.SliceStable(confListName, func(i, j int) bool {
-		return confListName[i].Name < confListName[j].Name
+	sort.SliceStable(sysListName, func(i, j int) bool {
+		return sysListName[i].Name < sysListName[j].Name
 	})
 }
 
-func confLoadResourses() {
+func sysLoadResourses() {
 
 }
 
-func confExecute(cmd string) {
+func sysExecute(cmd string) {
 	if exe := exec.Command(cmd); exe != nil {
 		exe.Run()
 	}
 }
 
-func confLoadAdd(ip string, mac string, name string) {
+func sysAddHost(ip string, mac string, name string) {
 	host := &sysAddress{IP: ip, MAC: mac, Name: name }
 	if ip != "" {
-		if confMapIP[ip] == nil || ip != "192168234062" || host.Name == "root" {
-			confMapIP[ip] = host
+		if sysMapIP[ip] == nil || ip != "192168234062" || host.Name == "root" {
+			sysMapIP[ip] = host
 		}
 	}
 	if mac != "" {
-		confMapMAC[mac] = host
+		sysMapMAC[mac] = host
 	}
 	if name != "" {
-		if confMapName[name] == nil || name != "root" || host.IP == "192168234062" {
-			confMapName[name] = host
+		if sysMapName[name] == nil || name != "root" || host.IP == "192168234062" {
+			sysMapName[name] = host
 		}
 	}
 }
 
-func confDirect(namefile string) bool {
+func sysUpdateDirect(namefile string) bool {
 	code := "$TTL	38400\n"
 	code += "rptp.org.	IN	SOA	root.rptp.org.	master.rptp.org. ( 1428401303 10800 3600 604800 38400 )\n"
 	code += "rptp.org.	IN	NS	root.rptp.org.\n"
 	code += "rptp.org.	IN	A	192.168.234.62\n"
 	code += ";\n"
-	for _,host := range confListName {
+	for _,host := range sysListName {
 		if host.Name != "" && host.IP != "" {
 			code += fmt.Sprintf("%s.rptp.org.	IN	A	%s\n", host.Name, IPToShow(host.IP))
 		}
@@ -147,12 +147,12 @@ func confDirect(namefile string) bool {
 	return confWrite(namefile, code)
 }
 
-func confReverse(namefile string) bool {
+func sysUpdateReverse(namefile string) bool {
 	code := "$TTL	38400\n"
 	code += "168.192.in-addr.arpa.	IN	SOA	root.rptp.org.	master.rptp.org. ( 1330323963 10800 3600 604800 38400 )\n"
 	code += "168.192.in-addr.arpa.	IN	NS	root.rptp.org.\n"
 	code += ";\n"
-	for _,host := range confListIP {
+	for _,host := range sysListIP {
 		if match := lik.RegExParse(host.IP, "(192)(168)(\\d\\d\\d)(\\d\\d\\d)"); match != nil && host.Name != "" {
 			ip3 := lik.StrToInt(match[3])
 			ip4 := lik.StrToInt(match[4])
@@ -162,7 +162,7 @@ func confReverse(namefile string) bool {
 	return confWrite(namefile, code)
 }
 
-func confDHCP(namefile string) bool {
+func sysUpdateDHCP(namefile string) bool {
 	code := "max-lease-time	40000;\n"
 	code += "default-lease-time	40000;\n"
 	code += "authoritative;\n"
@@ -207,7 +207,7 @@ func confDHCP(namefile string) bool {
 					code += fmt.Sprintf("		option static-route-win %s;\n", option)
 				}
 				code += fmt.Sprintf("	}\n")
-				for _,host := range confMapMAC {
+				for _,host := range sysMapMAC {
 					if match := lik.RegExParse(host.IP, ipp + "(\\d\\d\\d)"); match != nil {
 						ip4 := lik.StrToInt(match[1])
 						if ip4 > 0 && host.IP != "" && host.MAC != "" {
@@ -253,7 +253,7 @@ func confClassLess() string {
 	return "10:c0:a8:c0:a8:e5:03:18:0a:3e:9b:c0:a8:e5:03"
 }
 
-func confGate(namefile string) bool {
+func sysUpdateGate(namefile string) bool {
 	code := "#!/bin/bash\n"
 	list := confBuildList()
 	for _,elm := range list {
@@ -267,7 +267,7 @@ func confGate(namefile string) bool {
 	return confWrite(namefile, code)
 }
 
-func confSamba(server string, namefile string) bool {
+func sysUpdateSamba(server string, namefile string) bool {
 	code := "# Samba lisr access\n"
 	return confWrite(namefile, code)
 }

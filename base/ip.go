@@ -133,6 +133,8 @@ func (it *ElmIP) SetIPOnline() {
 func SetIPOffline(ip string) {
 	if it, _ := IPMapIP[ip]; it != nil {
 		it.SetIPOffline()
+	} else {
+		SetPingsOffline(ip)
 	}
 }
 
@@ -146,6 +148,8 @@ func (it *ElmIP) SetIPOffline() {
 			SetPingsOffline(it.IP)
 			AddEvent(it.IP, it.OnlineMAC, "", "OFF ip")
 		}
+	} else {
+		SetPingsOffline(it.IP)
 	}
 }
 

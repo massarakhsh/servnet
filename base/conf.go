@@ -10,6 +10,7 @@ var ConfBase = "rptp"
 var ConfUser = "rptp"
 var ConfPass = "Shaman1961"
 var ConfVirtual = false
+var ConfPort = 0
 
 var HostName = ""
 var HostPid = 0
@@ -27,4 +28,5 @@ var TimeoutIP = time.Second * 180
 var TimeoutMAC = time.Second * 60
 var TimeoutAlarm = time.Second * 15
 var TimeoutFull = time.Second * 900
+var TimeoutOffline = time.Hour * 24 * 30
 

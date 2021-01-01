@@ -70,7 +70,7 @@ func LoadTables() {
 	LoadPing()
 	NetLink()
 	if host,_ := os.Hostname(); strings.ToLower(host) == "root" {
-		Configurate()
+		SysUpdate()
 	}
 	dbOk = true
 	UnlockDB()
