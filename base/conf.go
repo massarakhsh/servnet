@@ -24,8 +24,8 @@ const ROLE_ONLINE = 0x1000
 const ROLE_LINKED = 0x2000
 const ROLE_ROOT = 0x10000
 
-var TimeoutIP = time.Second * 180
-var TimeoutMAC = time.Second * 60
+var TimeoutIP = time.Second * 60
+var TimeoutMAC = time.Second * 50
 var TimeoutAlarm = time.Second * 15
 var TimeoutFull = time.Second * 900
 var TimeoutOffline = time.Hour * 24 * 30

@@ -9,6 +9,7 @@ import (
 type ElmAsk struct {
 	IP      string
 	Online  bool
+	Offline  bool
 	At      time.Time
 	ElmNext *ElmAsk
 	ElmPred *ElmAsk
@@ -64,9 +65,15 @@ func AskPingPop() *ElmAsk {
 
 func AskPingPush(pit *ElmAsk) {
 	AskSync.Lock()
-	sec := 15 + rand.Intn(10)
-	if !pit.Online {
-		sec += 60 + rand.Intn(60)
+	sec := 0
+	if pit.Online {
+		sec += 10 + rand.Intn(5)
+		pit.Offline = false
+	} else if !pit.Offline {
+		sec += 15 + rand.Intn(10)
+		pit.Offline = true
+	} else {
+		sec += 60 + rand.Intn(20)
 	}
 	askMove(pit, sec)
 	AskSync.Unlock()
