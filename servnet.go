@@ -30,7 +30,7 @@ func main() {
 	}
 	if base.HostName == "shaman" {
 		base.ConfServ = "192.168.234.62"
-		base.ConfVirtual = true
+		//base.ConfVirtual = true
 	}
 	lik.SayError("System started on " + base.HostName)
 
@@ -167,11 +167,11 @@ func waitSignal() {
 	for {
 		signal := <-base.HostChan
 		if signal == syscall.Signal(23) {
-			base.IsStoping = true
-			break
-		//} else if signal == syscall.Signal(25) {
-		//	repo.ToPause = false
-		} else {
+			//base.IsStoping = true
+		} else if signal == syscall.Signal(25) {
+			//repo.ToPause = false
+		} else if signal == syscall.Signal(3) || signal == syscall.Signal(9) || signal == syscall.Signal(15)  {
+			lik.SayWarning(fmt.Sprintf("Signal %d", signal))
 			base.IsStoping = true
 			break
 		}
