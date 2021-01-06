@@ -148,9 +148,11 @@ func (it *ElmPing) Update() {
 	set.SetItem(it.MAC, "MAC")
 	set.SetItem(it.TimeOn, "TimeOn")
 	set.SetItem(it.TimeOff, "TimeOff")
+	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 	if it.SysNum > 0 {
 		UpdateElm("Ping", it.SysNum, set)
 	} else {
+		set.SetItem("CURRENT_TIMESTAMP", "created_at")
 		it.SysNum = InsertElm("Ping", set)
 		PingMapSys[it.SysNum] = it
 	}

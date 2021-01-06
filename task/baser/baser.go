@@ -24,8 +24,9 @@ func (it *Baser) DoStep() {
 		base.SetParm("LikSrvAlarm", "0")
 		base.DBNetUpdated = true
 	} else if time.Now().Sub(it.LastTimeAlarm) > base.TimeoutFull {
-		it.doAlarm()
-	} else if base.DBNetUpdated && time.Now().Sub(it.LastTimeAlarm) > base.TimeoutAlarm {
+		base.DBNetUpdated = true
+	}
+	if base.DBNetUpdated && time.Now().Sub(it.LastTimeAlarm) > base.TimeoutAlarm {
 		it.doAlarm()
 	}
 	it.SetPause(time.Millisecond * 500)

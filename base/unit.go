@@ -65,6 +65,7 @@ func (it *ElmUnit) Update() {
 	set.SetItem(it.Roles, "Roles")
 	set.SetItem(it.Path, "Path")
 	set.SetItem(it.Map, "Map")
+	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 	if it.SysNum > 0 {
 		UpdateElm("Unit", it.SysNum, set)
 	}

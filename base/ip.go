@@ -160,6 +160,7 @@ func (it *ElmIP) Update() {
 	set.SetItem(it.MAC, "MAC")
 	set.SetItem(it.TimeOn, "TimeOn")
 	set.SetItem(it.TimeOff, "TimeOff")
+	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 	if it.SysNum > 0 {
 		UpdateElm("IP", it.SysNum, set)
 	}

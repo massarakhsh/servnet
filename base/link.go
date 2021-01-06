@@ -53,6 +53,7 @@ func (it *ElmLink) Update() {
 	set.SetItem(it.PortA, "PortA")
 	set.SetItem(it.SysUnitB, "SysUnitB")
 	set.SetItem(it.PortB, "PortB")
+	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 	if it.SysNum > 0 {
 		UpdateElm("Link", it.SysNum, set)
 	}

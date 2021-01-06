@@ -26,7 +26,7 @@ const ROLE_ROOT = 0x10000
 
 var TimeoutIP = time.Second * 60
 var TimeoutMAC = time.Second * 50
-var TimeoutAlarm = time.Second * 15
-var TimeoutFull = time.Second * 900
+var TimeoutAlarm = time.Second * 5
+var TimeoutFull = time.Second * 600
 var TimeoutOffline = time.Hour * 24 * 30
 
