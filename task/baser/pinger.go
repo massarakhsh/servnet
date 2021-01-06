@@ -48,7 +48,7 @@ func (it *Pinger) pingExec(pit *base.ElmAsk) {
 }
 
 func (it *Pinger) pingICMP(pit *base.ElmAsk) {
-	if pit.IP == "192168000016" {
+	if base.DebugLevel > 0 && pit.IP == "192168000016" {
 		xon := (time.Now().Minute() & 0x2) != 0
 		it.pingSetOnline(pit, xon)
 	} else if pinger, err := ping.NewPinger(base.IPToShow(pit.IP)); err == nil {
