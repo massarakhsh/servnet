@@ -154,14 +154,14 @@ func (it *ElmIP) SetIPOffline() {
 }
 
 func (it *ElmIP) Update() {
-	set := lik.BuildSet()
-	set.SetItem(it.Roles, "Roles")
-	set.SetItem(it.IP, "IP")
-	set.SetItem(it.MAC, "MAC")
-	set.SetItem(it.TimeOn, "TimeOn")
-	set.SetItem(it.TimeOff, "TimeOff")
-	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 	if it.SysNum > 0 {
+		set := lik.BuildSet()
+		set.SetItem(it.Roles, "Roles")
+		set.SetItem(it.IP, "IP")
+		set.SetItem(it.MAC, "MAC")
+		set.SetItem(it.TimeOn, "TimeOn")
+		set.SetItem(it.TimeOff, "TimeOff")
+		set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 		UpdateElm("IP", it.SysNum, set)
 	}
 	if unit,_ := UnitMapSys[it.SysUnit]; unit != nil {

@@ -72,6 +72,7 @@ func SetPingsOffline(ip string) {
 				it.Roles ^= ROLE_ONLINE
 				it.TimeOff = int(time.Now().Unix())
 				it.Update()
+				AddEvent(it.IP, it.MAC, "", "OFF ping")
 			}
 		}
 	}
@@ -127,6 +128,9 @@ func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
 			}
 			it = &ElmPing{SysNum: sys, IP: ip, MAC: mac, Roles: roles}
 			PingList = append(PingList, it)
+			if ipelm, _ := IPMapIP[ip]; ipelm == nil {
+				AddIP(0, ip, mac, roles&ROLE_ONLINE)
+			}
 			if sys > 0 {
 				PingMapSys[sys] = it
 			}
