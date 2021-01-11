@@ -114,13 +114,19 @@ func RolesToShow(roles int) string {
 	return def
 }
 
-func SetIPOnline(ip string) {
+func IPSetOnline(ip string) {
 	if it, _ := IPMapIP[ip]; it != nil {
-		it.SetIPOnline()
+		it.SetOnline()
 	}
 }
 
-func (it *ElmIP) SetIPOnline() {
+func IPSetOffline(ip string) {
+	if it, _ := IPMapIP[ip]; it != nil {
+		it.SetOffline()
+	}
+}
+
+func (it *ElmIP) SetOnline() {
 	it.SeekOn = time.Now()
 	if (it.Roles & ROLE_ONLINE) == 0 {
 		it.Roles ^= ROLE_ONLINE
@@ -130,26 +136,18 @@ func (it *ElmIP) SetIPOnline() {
 	}
 }
 
-func SetIPOffline(ip string) {
-	if it, _ := IPMapIP[ip]; it != nil {
-		it.SetIPOffline()
-	} else {
-		SetPingsOffline(ip)
-	}
-}
-
-func (it *ElmIP) SetIPOffline() {
+func (it *ElmIP) SetOffline() {
 	if (it.Roles & ROLE_ONLINE) != 0 {
 		if time.Now().Sub(it.SeekOn) > TimeoutIP {
 			it.Roles ^= ROLE_ONLINE
 			it.OnlineMAC = ""
 			it.TimeOff = int(time.Now().Unix())
 			it.Update()
-			SetPingsOffline(it.IP)
+			PingSetOffline(it.IP)
 			AddEvent(it.IP, it.OnlineMAC, "", "OFF ip")
 		}
 	} else {
-		SetPingsOffline(it.IP)
+		PingSetOffline(it.IP)
 	}
 }
 

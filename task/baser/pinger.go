@@ -81,10 +81,10 @@ func (it *Pinger) pingSetOnline(pit *base.ElmAsk, on bool) {
 	base.LockDB()
 	if on {
 		pit.Online = true
-		base.SetIPOnline(pit.IP)
+		base.IPSetOnline(pit.IP)
 	} else {
 		pit.Online = false
-		base.SetIPOffline(pit.IP)
+		base.IPSetOffline(pit.IP)
 	}
 	base.UnlockDB()
 }

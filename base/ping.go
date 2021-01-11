@@ -64,7 +64,7 @@ func LoadPing() {
 	}
 }
 
-func SetPingsOffline(ip string) {
+func PingSetOffline(ip string) {
 	PingSync.Lock()
 	if lip := PingMapIP[ip]; lip != nil {
 		for _, it := range lip {
@@ -79,11 +79,11 @@ func SetPingsOffline(ip string) {
 	PingSync.Unlock()
 }
 
-func SetPingOnline(ip string, mac string) {
+func PingSetOnline(ip string, mac string) {
 	PingSync.Lock()
 	if ipelm, _ := IPMapIP[ip]; ipelm != nil {
 		ipelm.OnlineMAC = mac
-		ipelm.SetIPOnline()
+		ipelm.SetOnline()
 	}
 	found := false
 	for _, it := range PingMapSys {

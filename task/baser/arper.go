@@ -41,7 +41,7 @@ func (it *ARPer) DoStep() {
 	base.LockDB()
 	for _,elm := range it.Elms {
 		//fmt.Printf("%s : %s\n", base.IPToShow(elm.IP), base.MACToShow(elm.MAC))
-		base.SetPingOnline(elm.IP, elm.MAC)
+		base.PingSetOnline(elm.IP, elm.MAC)
 	}
 	base.UnlockDB()
 	it.SetPause(time.Second * 15)
