@@ -23,11 +23,12 @@ type ElmIP struct {
 }
 
 var IPMapSys map[lik.IDB]*ElmIP
-var IPMapOld map[lik.IDB]*ElmIP
 var IPMapIP map[string]*ElmIP
+var IPMapOld map[string]*ElmIP
 
 func LoadIP() {
 	if list := GetList("IP"); list != nil {
+		IPMapOld = IPMapIP
 		IPMapSys = make(map[lik.IDB]*ElmIP)
 		IPMapIP = make(map[string]*ElmIP)
 		for n := 0; n < list.Count(); n++ {
@@ -46,7 +47,7 @@ func LoadIP() {
 					it.SysUnit = elm.GetIDB("SysUnit")
 					if IPMapOld == nil {
 						it.SeekOn = time.Now()
-					} else if old := IPMapOld[sys]; old == nil {
+					} else if old := IPMapOld[ip]; old == nil {
 						it.SeekOn = time.Now()
 					} else {
 						it.SeekOn = old.SeekOn
@@ -57,7 +58,6 @@ func LoadIP() {
 				}
 			}
 		}
-		IPMapOld = IPMapSys
 	}
 }
 
