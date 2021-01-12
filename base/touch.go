@@ -1,6 +1,7 @@
 package base
 
 import (
+	"fmt"
 	"github.com/massarakhsh/lik"
 	"time"
 )
@@ -11,75 +12,67 @@ type ElmTouch struct {
 	Roles  	int
 	Port	int
 	MAC    	string
-	TimeOn  int
 	TimeAt	int
 }
 
 var TouchMapSys map[lik.IDB]*ElmTouch
-var TouchMapIP map[string]*ElmTouch
+var TouchMapIPM map[string]*ElmTouch
 var TouchMapOld map[lik.IDB]*ElmTouch
 
 func LoadTouch() {
 	if list := GetList("Touch"); list != nil {
 		TouchMapOld = TouchMapSys
 		TouchMapSys = make(map[lik.IDB]*ElmTouch)
-		TouchMapIP = make(map[string]*ElmTouch)
+		TouchMapIPM = make(map[string]*ElmTouch)
 		for n := 0; n < list.Count(); n++ {
 			if elm := list.GetSet(n); elm != nil {
 				sys := elm.GetIDB("SysNum")
+				sysunit := elm.GetIDB("SysUnit")
+				port := elm.GetInt("Port")
 				roles := elm.GetInt("Roles")
 				mac := elm.GetString("MAC")
-				ton := elm.GetInt("TimeOn")
 				tat := elm.GetInt("TimeAt")
-				if (roles & ROLE_ONLINE) == 0 && time.Now().Sub(time.Unix(int64(tlast),0)) > TimeoutOffline {
-					DeleteElm("Ping", sys)
-				if ip := elm.GetString("IP"); ip == "" {
-					DeleteElm("IP", sys)
-				} else if _, ok := TouchMapIP[ip]; ok {
-					lik.SayError("IP duplicate " + IPToShow(ip) + " daleted")
-					DeleteElm("IP", sys)
+				if UnitMapSys[sysunit] == nil || mac == "" {
+					DeleteElm("Touch", sys)
+				} else if TouchFind(sysunit, port, mac) != nil {
+					lik.SayError("Touch duplicate daleted")
+					DeleteElm("Touch", sys)
+				} else if (roles & ROLE_ONLINE) == 0 && time.Now().Sub(time.Unix(int64(tat),0)) > TimeoutOffline {
+					DeleteElm("Touch", sys)
 				} else {
-					it := AddIP(sys, ip, elm.GetString("MAC"), elm.GetInt("Roles"))
-					it.Namely = elm.GetString("Namely")
-					it.TimeOn = elm.GetInt("TimeOn")
-					it.TimeOff = elm.GetInt("TimeOff")
-					it.SysUnit = elm.GetIDB("SysUnit")
-					if TouchMapOld == nil {
-						it.SeekOn = time.Now()
-					} else if old := TouchMapOld[ip]; old == nil {
-						it.SeekOn = time.Now()
-					} else {
-						it.SeekOn = old.SeekOn
-					}
-					if unit,_ := UnitMapSys[it.SysUnit]; unit != nil {
-						unit.ListIP = append(unit.ListIP, sys)
-					}
+					AddTouch(sys, sysunit, port, mac, tat, roles)
 				}
 			}
 		}
 	}
 }
 
-func (it *ElmTouch) Update() {
-	if it.SysNum > 0 {
-		set := lik.BuildSet()
-		set.SetItem(it.Roles, "Roles")
-		set.SetItem(it.IP, "IP")
-		set.SetItem(it.MAC, "MAC")
-		set.SetItem(it.TimeOn, "TimeOn")
-		set.SetItem(it.TimeOff, "TimeOff")
-		set.SetItem("CURRENT_TIMESTAMP", "updated_at")
-		UpdateElm("IP", it.SysNum, set)
-	}
-	if unit,_ := UnitMapSys[it.SysUnit]; unit != nil {
-		unit.NetUpdate()
-	}
+func TouchFind(sysunit lik.IDB, port int, mac string) *ElmTouch {
+	ipm := fmt.Sprintf("%d_%d_%s", sysunit, port, mac)
+	touch := TouchMapIPM[ipm]
+	return touch
 }
 
-func AddTouch(sys lik.IDB, ip string, mac string, roles int) *ElmTouch {
-	it := &ElmTouch{SysNum: sys, IP: ip, MAC: mac, Roles: roles }
-	TouchMapSys[sys] = it
-	TouchMapIP[ip] = it
+func AddTouch(sys lik.IDB, sysunit lik.IDB, port int, mac string, at int, roles int) *ElmTouch {
+	it := &ElmTouch{SysNum: sys, SysUnit: sysunit, Port: port, MAC: mac, TimeAt: at, Roles: roles}
+	ipm := fmt.Sprintf("%d_%d_%s", sysunit, port, mac)
+	TouchMapIPM[ipm] = it
 	return it
 }
 
+func (it *ElmTouch) Update() {
+	set := lik.BuildSet()
+	set.SetItem(it.SysUnit, "SysUnit")
+	set.SetItem(it.Roles, "Roles")
+	set.SetItem(it.Port, "Port")
+	set.SetItem(it.MAC, "MAC")
+	set.SetItem(it.TimeAt, "TimeAt")
+	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
+	if it.SysNum > 0 {
+		UpdateElm("Touch", it.SysNum, set)
+	} else {
+		set.SetItem("CURRENT_TIMESTAMP", "created_at")
+		it.SysNum = InsertElm("Touch", set)
+		TouchMapSys[it.SysNum] = it
+	}
+}

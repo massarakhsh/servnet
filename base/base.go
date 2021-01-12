@@ -68,6 +68,7 @@ func LoadTables() {
 	LoadLink()
 	LoadIP()
 	LoadPing()
+	LoadTouch()
 	NetLink()
 	if host,_ := os.Hostname(); strings.ToLower(host) == "root" {
 		SysUpdate()
