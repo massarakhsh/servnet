@@ -58,7 +58,7 @@ func WaitDB() bool {
 
 func LoadTables() {
 	if DebugLevel > 0 {
-		lik.SayInfo("LoadTables")
+		lik.SayInfo("Reload database")
 	}
 	LockDB()
 	DBNetUpdated = false

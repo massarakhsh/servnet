@@ -2,7 +2,6 @@ package base
 
 import (
 	"github.com/massarakhsh/lik"
-	"sync"
 	"time"
 )
 
@@ -17,18 +16,15 @@ type ElmPing struct {
 	SeekOn  time.Time
 }
 
-var PingSync sync.Mutex
-var PingList []*ElmPing
 var PingMapSys map[lik.IDB]*ElmPing
-var PingMapOld map[lik.IDB]*ElmPing
 var PingMapIP map[string][]*ElmPing
 var PingMapIM map[string]*ElmPing
+var PingMapOld map[lik.IDB]*ElmPing
 
 func LoadPing() {
 	list := GetList("Ping")
 	if list != nil {
-		PingSync.Lock()
-		PingList = []*ElmPing{}
+		PingMapOld = PingMapSys
 		PingMapSys = make(map[lik.IDB]*ElmPing)
 		PingMapIP = make(map[string][]*ElmPing)
 		PingMapIM = make(map[string]*ElmPing)
@@ -59,13 +55,10 @@ func LoadPing() {
 				}
 			}
 		}
-		PingMapOld = PingMapSys
-		PingSync.Unlock()
 	}
 }
 
 func PingSetOffline(ip string) {
-	PingSync.Lock()
 	if lip := PingMapIP[ip]; lip != nil {
 		for _, it := range lip {
 			if (it.Roles & ROLE_ONLINE) != 0 {
@@ -76,11 +69,9 @@ func PingSetOffline(ip string) {
 			}
 		}
 	}
-	PingSync.Unlock()
 }
 
 func PingSetOnline(ip string, mac string) {
-	PingSync.Lock()
 	if ipelm, _ := IPMapIP[ip]; ipelm != nil {
 		ipelm.OnlineMAC = mac
 		ipelm.SetOnline()
@@ -115,7 +106,6 @@ func PingSetOnline(ip string, mac string) {
 			AddEvent(ip, mac, "", "ON new")
 		}
 	}
-	PingSync.Unlock()
 }
 
 func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
@@ -127,7 +117,6 @@ func AddPing(sys lik.IDB, ip string, mac string, roles int) *ElmPing {
 				return nil
 			}
 			it = &ElmPing{SysNum: sys, IP: ip, MAC: mac, Roles: roles}
-			PingList = append(PingList, it)
 			if ipelm, _ := IPMapIP[ip]; ipelm == nil {
 				AddIP(0, ip, mac, roles&ROLE_ONLINE)
 			}

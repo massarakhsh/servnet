@@ -115,13 +115,21 @@ func RolesToShow(roles int) string {
 }
 
 func IPSetOnline(ip string) {
-	if it, _ := IPMapIP[ip]; it != nil {
+	it, _ := IPMapIP[ip]
+	if it == nil && ip != "" {
+		it = AddIP(0, ip, "", ROLE_ONLINE)
+	}
+	if it != nil {
 		it.SetOnline()
 	}
 }
 
 func IPSetOffline(ip string) {
-	if it, _ := IPMapIP[ip]; it != nil {
+	it, _ := IPMapIP[ip]
+	if it == nil && ip != "" {
+		it = AddIP(0, ip, "", 0)
+	}
+	if it != nil {
 		it.SetOffline()
 	}
 }
