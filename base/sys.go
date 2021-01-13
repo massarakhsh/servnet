@@ -31,7 +31,7 @@ func SysUpdate() {
 		}
 	}
 	if sysUpdateDHCP("/etc/dhcp/dhcpd.conf") {
-		if HostName == "root2" {
+		if HostName == "root" {
 			sysExecute("/etc/init.d/isc-dhcp-server restart")
 		}
 	}
@@ -41,12 +41,12 @@ func SysUpdate() {
 		}
 	}
 	sysLoadResourses()
-	if sysUpdateSamba("root", "/etc/samba/public.conf") {
+	if sysUpdateSamba("root", "/etc/samba/public.conf2") {
 		if HostName == "root2" {
 			sysExecute("/etc/init.d/smbd restart")
 		}
 	}
-					if sysUpdateSamba("master", "/etc/samba/public_m.conf") {
+	if sysUpdateSamba("master", "/etc/samba/public_m.conf2") {
 	}
 }
 
