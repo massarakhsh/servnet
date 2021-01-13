@@ -48,7 +48,7 @@ func (it *Pinger) pingExec(pit *base.ElmAsk) {
 }
 
 func (it *Pinger) pingICMP(pit *base.ElmAsk) {
-	if base.DebugLevel > 0 && pit.IP == "192168000016" {
+	if base.DebugLevel > 9 && pit.IP == "192168000016" {
 		xon := (time.Now().Minute() & 0x2) != 0
 		it.pingSetOnline(pit, xon)
 	} else if pinger, err := ping.NewPinger(base.IPToShow(pit.IP)); err == nil {
@@ -79,6 +79,7 @@ func (it *Pinger) pingICMP(pit *base.ElmAsk) {
 
 func (it *Pinger) pingSetOnline(pit *base.ElmAsk, on bool) {
 	base.Lock()
+	defer base.Unlock()
 	if on {
 		pit.Online = true
 		base.IPSetOnline(pit.IP)
@@ -86,5 +87,4 @@ func (it *Pinger) pingSetOnline(pit *base.ElmAsk, on bool) {
 		pit.Online = false
 		base.IPSetOffline(pit.IP)
 	}
-	base.Unlock()
 }

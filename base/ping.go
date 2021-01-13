@@ -62,10 +62,12 @@ func PingSetOffline(ip string) {
 	if lip := PingMapIP[ip]; lip != nil {
 		for _, it := range lip {
 			if (it.Roles & ROLE_ONLINE) != 0 {
-				it.Roles ^= ROLE_ONLINE
-				it.TimeOff = int(time.Now().Unix())
-				it.Update()
-				AddEvent(it.IP, it.MAC, "", "OFF ping")
+				if time.Now().Sub(it.SeekOn) > TimeoutMAC {
+					it.Roles ^= ROLE_ONLINE
+					it.TimeOff = int(time.Now().Unix())
+					it.Update()
+					AddEvent(it.IP, it.MAC, "", "OFF ping")
+				}
 			}
 		}
 	}
