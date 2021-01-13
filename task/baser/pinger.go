@@ -78,17 +78,13 @@ func (it *Pinger) pingICMP(pit *base.ElmAsk) {
 }
 
 func (it *Pinger) pingSetOnline(pit *base.ElmAsk, on bool) {
-	base.LockDB()
+	base.Lock()
 	if on {
-		base.LockDB()
 		pit.Online = true
 		base.IPSetOnline(pit.IP)
-		base.UnlockDB()
 	} else {
-		base.LockDB()
 		pit.Online = false
 		base.IPSetOffline(pit.IP)
-		base.UnlockDB()
 	}
-	base.UnlockDB()
+	base.Unlock()
 }

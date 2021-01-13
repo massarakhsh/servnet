@@ -67,7 +67,7 @@ func main() {
 	if !base.OpenDB(base.ConfServ, base.ConfBase, base.ConfUser, base.ConfPass) {
 		return
 	}
-	base.WaitDB()
+	base.WaitReady()
 	baser.StartBaser()
 	baser.StartPinger()
 	baser.StartARP()

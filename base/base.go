@@ -14,7 +14,7 @@ const (
 	Version = "0.1"
 )
 
-var dbLock sync.Mutex
+var dbSync sync.Mutex
 var dbOk bool
 var DB likbase.DBaser
 var DBNetUpdated = false
@@ -38,20 +38,20 @@ func CloseDB() {
 	}
 }
 
-func LockDB() {
-	dbLock.Lock()
+func Lock() {
+	dbSync.Lock()
 }
 
-func UnlockDB() {
-	dbLock.Unlock()
+func Unlock() {
+	dbSync.Unlock()
 }
 
-func WaitDB() bool {
+func WaitReady() bool {
 	for tw := 0; tw < 30; tw++ {
 		if dbOk {
 			return true
 		}
-		time.Sleep(time.Millisecond * 100)
+		time.Sleep(time.Second * 1)
 	}
 	return false
 }
@@ -60,7 +60,8 @@ func LoadTables() {
 	if DebugLevel > 0 {
 		lik.SayInfo("Reload database")
 	}
-	LockDB()
+	Lock()
+	defer Unlock()
 	DBNetUpdated = false
 	dbOk = false
 	InitAsk()
@@ -74,7 +75,6 @@ func LoadTables() {
 		SysUpdate()
 	}
 	dbOk = true
-	UnlockDB()
 }
 
 func GetElm(part string, id lik.IDB) lik.Seter {

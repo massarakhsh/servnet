@@ -38,12 +38,12 @@ func (it *ARPer) DoStep() {
 	}
 	it.callRouter()
 	//it.callSwitch()
-	base.LockDB()
+	base.Lock()
 	for _,elm := range it.Elms {
 		//fmt.Printf("%s : %s\n", base.IPToShow(elm.IP), base.MACToShow(elm.MAC))
 		base.PingSetOnline(elm.IP, elm.MAC)
 	}
-	base.UnlockDB()
+	base.Unlock()
 	it.SetPause(time.Second * 15)
 }
 
