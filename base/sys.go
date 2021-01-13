@@ -60,7 +60,7 @@ func sysLoadAddress() {
 		if elm.IP == "192168234062" {
 			elm.IP += ""
 		}
-		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & 0x200) == 0 {	//	Первичный адрес
+		if elm.SysNum > 0 && elm.IP > "" && (elm.Roles & ROLE_APPEND) == 0 {	//	Первичный адрес
 			if unit,_ := UnitMapSys[elm.SysUnit]; unit != nil {
 				if name := confNameSymbols(unit.Namely); name != ""  {
 					sysAddHost(elm.IP, elm.MAC, name)

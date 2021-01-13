@@ -30,7 +30,7 @@ func main() {
 	}
 	if base.HostName == "shaman" {
 		base.ConfServ = "192.168.234.62"
-		//base.ConfVirtual = true
+		base.ConfVirtual = true
 	}
 	lik.SayError("System started on " + base.HostName)
 
@@ -74,10 +74,6 @@ func main() {
 	if base.ConfPort > 0 {
 		api.StartAPI()
 	}
-	go func() {
-		time.Sleep(time.Second * 10)
-		//base.IsStoping = true
-	}()
 
 	for !base.IsStoping {
 		time.Sleep(time.Second * 1)

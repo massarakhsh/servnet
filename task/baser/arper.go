@@ -78,7 +78,7 @@ func (it *ARPer) callRoot() {
 }
 
 func (it *ARPer) callRouter() {
-	if touch := likssh.Open("192.168.0.3:22", "admin", "", "root.opn"); touch != nil {
+	if touch := likssh.Open("192.168.0.3:22", "admin", "", "var/host_rsa"); touch != nil {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			for _, line := range lines {
