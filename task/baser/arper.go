@@ -43,10 +43,14 @@ func (it *ARPer) DoStep() {
 		it.callLocal()
 	}
 	if base.HostName != "root" {
-		it.callRoot()
+		it.callRoot("192.168.234.62")
 	}
-	it.callRouter()
-	//it.callSwitch()
+	it.callRouter("192.168.234.3")
+	it.callSwitch("192.168.0.15")
+	//for _,ip := range []string { "192.168.0.15",
+	//	"192.168.0.241", "192.168.0.242", "192.168.0.243", "192.168.0.244", "192.168.0.245", "192.168.0.246"} {
+	//	it.callSwitch(ip)
+	//}
 	base.Lock()
 	for _, arp := range it.Arps {
 		base.PingSetOnline(arp.IP, arp.MAC)
@@ -73,8 +77,8 @@ func (it *ARPer) callLocal() {
 	}
 }
 
-func (it *ARPer) callRoot() {
-	if touch := likssh.Open("192.168.234.62:22", "root", "", "var/host_rsa"); touch != nil {
+func (it *ARPer) callRoot(ip string) {
+	if touch := likssh.Open(base.IPToShow(ip) + ":22", "root", "", "var/host_rsa"); touch != nil {
 		if answer := touch.Execute("arp -an"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			if base.DebugLevel > 0 {
@@ -91,12 +95,12 @@ func (it *ARPer) callRoot() {
 	}
 }
 
-func (it *ARPer) callRouter() {
+func (it *ARPer) callRouter(ip string) {
 	var sysunit lik.IDB
-	if ipelm := base.IPMapIP[base.IPFromShow("192.168.0.3")]; ipelm != nil {
+	if ipelm := base.IPMapIP[base.IPFromShow(ip)]; ipelm != nil {
 		sysunit = ipelm.SysNum
 	}
-	if touch := likssh.Open("192.168.0.3:22", "admin", "", "var/host_rsa"); touch != nil {
+	if touch := likssh.Open(base.IPToShow(ip) + ":22", "admin", "", "var/host_rsa"); touch != nil {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			if base.DebugLevel > 0 {
@@ -134,8 +138,8 @@ func (it *ARPer) callRouter() {
 	}
 }
 
-func (it *ARPer) callSwitch() {
-	if touch := likssh.Open("192.168.0.241:22", "cisco", "gamilto17", ""); touch != nil {
+func (it *ARPer) callSwitch(ip string) {
+	if touch := likssh.Open(base.IPToShow(ip) + ":22", "cisco", "gamilto17", ""); touch != nil {
 		if answer := touch.Execute("dir"); answer != "" {
 			fmt.Println(answer)
 		}
@@ -161,6 +165,6 @@ func (it *ARPer) addArp(ip string, mac string) {
 }
 
 func (it *ARPer) addLoc(sysunit lik.IDB, port int, mac string, secs int) {
-	//it.Locs = append(it.Locs, LocElm{ SysUnit: sysunit, Port: port, MAC: mac, Secs: secs })
+	it.Locs = append(it.Locs, LocElm{ SysUnit: sysunit, Port: port, MAC: mac, Secs: secs })
 }
 
