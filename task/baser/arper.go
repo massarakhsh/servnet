@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/lik/likssh"
+	"github.com/massarakhsh/lik/liktel"
 	"github.com/massarakhsh/servnet/base"
 	"github.com/massarakhsh/servnet/task"
 	"github.com/mostlygeek/arp"
@@ -139,7 +140,7 @@ func (it *ARPer) callRouter(ip string) {
 }
 
 func (it *ARPer) callSwitch(ip string) {
-	if touch := likssh.Open(base.IPToShow(ip) + ":22", "cisco", "gamilto17", ""); touch != nil {
+	if touch := liktel.Open(base.IPToShow(ip) + ":23", "cisco", "gamilto17"); touch != nil {
 		if answer := touch.Execute("dir"); answer != "" {
 			fmt.Println(answer)
 		}
