@@ -58,7 +58,7 @@ func (it *ARPer) DoStep() {
 func (it *ARPer) callLocal() {
 	if table := arp.Table(); table != nil {
 		if base.DebugLevel > 0 {
-			fmt.Sprintf("Load locals ARP: %d\n", len(table))
+			fmt.Printf("Load locals ARP: %d\n", len(table))
 		}
 		for ips, ipa := range table {
 			mac := ""
@@ -78,7 +78,7 @@ func (it *ARPer) callRoot() {
 		if answer := touch.Execute("arp -an"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			if base.DebugLevel > 0 {
-				fmt.Sprintf("Load root ARP: %d\n", len(lines))
+				fmt.Printf("Load root ARP: %d\n", len(lines))
 			}
 			for _, line := range lines {
 				if match := lik.RegExParse(line, "(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
@@ -100,7 +100,7 @@ func (it *ARPer) callRouter() {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
 			if base.DebugLevel > 0 {
-				fmt.Sprintf("Load router ARP: %d\n", len(lines))
+				fmt.Printf("Load router ARP: %d\n", len(lines))
 			}
 			for _, line := range lines {
 				if match := lik.RegExParse(line, "\\s+(\\w+)\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
