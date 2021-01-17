@@ -111,7 +111,11 @@ func sysLoadResourses() {
 }
 
 func sysExecute(cmd string) {
-	if exe := exec.Command(cmd); exe != nil {
+	lik.SayInfo(cmd)
+	cmds := strings.Split(cmd, " ")
+	cmdc := cmds[0]
+	cmds = cmds[1:]
+	if exe := exec.Command(cmdc, cmds...); exe != nil {
 		exe.Run()
 	}
 }

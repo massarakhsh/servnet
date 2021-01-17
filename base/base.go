@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/massarakhsh/lik"
 	"github.com/massarakhsh/lik/likbase"
-	"os"
-	"strings"
 	"sync"
 	"time"
 )
@@ -71,7 +69,7 @@ func LoadTables() {
 	LoadPing()
 	LoadTouch()
 	NetLink()
-	if host,_ := os.Hostname(); strings.ToLower(host) == "root" {
+	if HostName == "root" {
 		SysUpdate()
 	}
 	dbOk = true
