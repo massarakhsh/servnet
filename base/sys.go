@@ -182,7 +182,7 @@ func sysUpdateDHCP(namefile string) bool {
 	use_ip := make(map[string]bool)
 	use_mac := make(map[string]bool)
 	use_name := make(map[string]bool)
-	list_zone := DB.GetListElm("*", "IPZone", "(Roles&0x4)=0", "IP")
+	list_zone := DB.GetListElm("*", "IPZone", "(Roles&0x4)=0", "IP,SysNum")
 	for nz := 0; nz < list_zone.Count(); nz++ {
 		if zone := list_zone.GetSet(nz); zone != nil {
 			pic := "(192)(168)(\\d\\d\\d)(\\d\\d\\d)"
@@ -211,7 +211,7 @@ func sysUpdateDHCP(namefile string) bool {
 					code += fmt.Sprintf("		option static-route-win %s;\n", option)
 				}
 				code += fmt.Sprintf("	}\n")
-				for _,host := range sysMapMAC {
+				for _,host := range sysListMAC {
 					if match := lik.RegExParse(host.IP, ipp + "(\\d\\d\\d)"); match != nil {
 						ip4 := lik.StrToInt(match[1])
 						if ip4 > 0 && host.IP != "" && host.MAC != "" {
