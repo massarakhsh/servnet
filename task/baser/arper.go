@@ -140,9 +140,24 @@ func (it *ARPer) callRouter(ip string) {
 }
 
 func (it *ARPer) callSwitch(ip string) {
+	var sysunit lik.IDB
+	if ipelm := base.IPMapIP[base.IPFromShow(ip)]; ipelm != nil {
+		sysunit = ipelm.SysNum
+	}
 	if touch := liktel.Open(base.IPToShow(ip) + ":23", "cisco", "gamilto17"); touch != nil {
-		if answer := touch.Execute("dir"); answer != "" {
-			fmt.Println(answer)
+		if _,ok := touch.Execute("terminal datadump"); ok {
+			if answer,ok := touch.Execute("show mac addr"); ok {
+				lines := strings.Split(answer, "\n")
+				for _, line := range lines {
+					if match := lik.RegExParse(line, "(\\S+)\\s+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)\\s+gi(\\d+)\\s+"); match != nil {
+						mac := base.MACFromShow(match[2])
+						port := lik.StrToInt(match[3])
+						it.addArp("", mac)
+						it.addLoc(sysunit, port, mac, 0)
+						fmt.Println(mac, ", ", port)
+					}
+				}
+			}
 		}
 		touch.Close()
 	}
