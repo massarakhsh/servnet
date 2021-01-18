@@ -55,8 +55,10 @@ func TouchFind(sysunit lik.IDB, port int, mac string) *ElmTouch {
 
 func AddTouch(sys lik.IDB, sysunit lik.IDB, port int, mac string, at int, roles int) *ElmTouch {
 	it := &ElmTouch{SysNum: sys, SysUnit: sysunit, Port: port, MAC: mac, TimeAt: at, Roles: roles}
-	ipm := fmt.Sprintf("%d_%d_%s", sysunit, port, mac)
-	TouchMapIPM[ipm] = it
+	if sys > 0 {
+		ipm := fmt.Sprintf("%d_%d_%s", sysunit, port, mac)
+		TouchMapIPM[ipm] = it
+	}
 	return it
 }
 
@@ -76,3 +78,36 @@ func (it *ElmTouch) Update() {
 		TouchMapSys[it.SysNum] = it
 	}
 }
+
+func TouchOnline(sysunit lik.IDB, port int, mac string, secs int) {
+	at := int(time.Now().Add(-time.Duration(secs) * time.Second).Unix())
+	if touch := TouchFind(sysunit, port, mac); touch != nil {
+		if (touch.Roles & ROLE_ONLINE) == 0 {
+			touch.Roles |= ROLE_ONLINE
+			touch.Update()
+		}
+		if at > touch.TimeAt {
+			touch.TimeAt = at
+			touch.Update()
+		}
+	} else {
+		touch = AddTouch(0, sysunit, port, mac, at, ROLE_ONLINE)
+		if touch != nil {
+			touch.Update()
+		}
+	}
+}
+
+func TouchTerminate() {
+	for _,touch := range TouchMapSys {
+		at := int(time.Now().Unix())
+		if (touch.Roles & ROLE_ONLINE) != 0 && at - touch.TimeAt > 2 * 60 {
+			touch.Roles ^= ROLE_ONLINE
+			touch.Update()
+		} else if (touch.Roles & ROLE_ONLINE) == 0 && at - touch.TimeAt > 3 * 24 * 60 * 60 {
+			DeleteElm("Touch", touch.SysNum)
+			delete(TouchMapSys, touch.SysNum)
+		}
+	}
+}
+

@@ -47,22 +47,25 @@ func (it *ARPer) DoStep() {
 		it.callRoot("192.168.234.62")
 	}
 	it.callRouter("192.168.234.3")
-	it.callSwitch("192.168.0.15")
-	//for _,ip := range []string { "192.168.0.15",
-	//	"192.168.0.241", "192.168.0.242", "192.168.0.243", "192.168.0.244", "192.168.0.245", "192.168.0.246"} {
-	//	it.callSwitch(ip)
-	//}
+	for _,ip := range []string { "192.168.0.15",
+		"192.168.0.241", "192.168.0.242", "192.168.0.243", "192.168.0.244", "192.168.0.245", "192.168.0.246"} {
+		it.callSwitch(ip)
+	}
 	base.Lock()
 	for _, arp := range it.Arps {
 		base.PingSetOnline(arp.IP, arp.MAC)
 	}
+	for _, loc := range it.Locs {
+		base.TouchOnline(loc.SysUnit, loc.Port, loc.MAC, loc.Secs)
+	}
+	base.TouchTerminate()
 	base.Unlock()
 	it.SetPause(time.Second * 15)
 }
 
 func (it *ARPer) callLocal() {
 	if table := arp.Table(); table != nil {
-		if base.DebugLevel > 0 {
+		if base.DebugLevel > 1 {
 			fmt.Printf("Load locals ARP: %d\n", len(table))
 		}
 		for ips, ipa := range table {
@@ -82,7 +85,7 @@ func (it *ARPer) callRoot(ip string) {
 	if touch := likssh.Open(base.IPToShow(ip) + ":22", "root", "", "var/host_rsa"); touch != nil {
 		if answer := touch.Execute("arp -an"); answer != "" {
 			lines := strings.Split(answer, "\n")
-			if base.DebugLevel > 0 {
+			if base.DebugLevel > 1 {
 				fmt.Printf("Load root ARP: %d\n", len(lines))
 			}
 			for _, line := range lines {
@@ -104,7 +107,7 @@ func (it *ARPer) callRouter(ip string) {
 	if touch := likssh.Open(base.IPToShow(ip) + ":22", "admin", "", "var/host_rsa"); touch != nil {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
 			lines := strings.Split(answer, "\n")
-			if base.DebugLevel > 0 {
+			if base.DebugLevel > 1 {
 				fmt.Printf("Load router ARP: %d\n", len(lines))
 			}
 			for _, line := range lines {
@@ -146,15 +149,32 @@ func (it *ARPer) callSwitch(ip string) {
 	}
 	if touch := liktel.Open(base.IPToShow(ip) + ":23", "cisco", "gamilto17"); touch != nil {
 		if _,ok := touch.Execute("terminal datadump"); ok {
+			if answer,ok := touch.Execute("show arp"); ok {
+				lines := strings.Split(answer, "\n")
+				if base.DebugLevel > 1 {
+					fmt.Printf("Load switch %s ARP: %d\n", base.IPToShow(ip), len(lines))
+				}
+				for _, line := range lines {
+					if match := lik.RegExParse(line, "(\\d+\\.\\d+\\.\\d+\\.\\d+).+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)"); match != nil {
+						ip := base.IPFromShow(match[1])
+						mac := base.MACFromShow(match[2])
+						it.addArp(ip, mac)
+						//fmt.Println(ip, ", ", mac)
+					}
+				}
+			}
 			if answer,ok := touch.Execute("show mac addr"); ok {
 				lines := strings.Split(answer, "\n")
+				if base.DebugLevel > 1 {
+					fmt.Printf("Load switch %s MACs: %d\n", base.IPToShow(ip), len(lines))
+				}
 				for _, line := range lines {
 					if match := lik.RegExParse(line, "(\\S+)\\s+(\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S:\\S\\S)\\s+gi(\\d+)\\s+"); match != nil {
 						mac := base.MACFromShow(match[2])
 						port := lik.StrToInt(match[3])
 						it.addArp("", mac)
 						it.addLoc(sysunit, port, mac, 0)
-						fmt.Println(mac, ", ", port)
+						//fmt.Println(mac, ", ", port)
 					}
 				}
 			}
