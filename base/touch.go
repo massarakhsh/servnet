@@ -13,6 +13,7 @@ type ElmTouch struct {
 	Port	int
 	MAC    	string
 	TimeAt	int
+	TimeOn	int
 }
 
 var TouchMapSys map[lik.IDB]*ElmTouch
@@ -31,6 +32,7 @@ func LoadTouch() {
 				port := elm.GetInt("Port")
 				roles := elm.GetInt("Roles")
 				mac := elm.GetString("MAC")
+				ton := elm.GetInt("TimeOn")
 				tat := elm.GetInt("TimeAt")
 				if UnitMapSys[sysunit] == nil || mac == "" {
 					DeleteElm("Touch", sys)
@@ -40,7 +42,7 @@ func LoadTouch() {
 				} else if (roles & ROLE_ONLINE) == 0 && time.Now().Sub(time.Unix(int64(tat),0)) > TimeoutOffline {
 					DeleteElm("Touch", sys)
 				} else {
-					AddTouch(sys, sysunit, port, mac, tat, roles)
+					AddTouch(sys, sysunit, port, mac, ton, tat, roles)
 				}
 			}
 		}
@@ -53,8 +55,8 @@ func TouchFind(sysunit lik.IDB, port int, mac string) *ElmTouch {
 	return touch
 }
 
-func AddTouch(sys lik.IDB, sysunit lik.IDB, port int, mac string, at int, roles int) *ElmTouch {
-	it := &ElmTouch{SysNum: sys, SysUnit: sysunit, Port: port, MAC: mac, TimeAt: at, Roles: roles}
+func AddTouch(sys lik.IDB, sysunit lik.IDB, port int, mac string, ton int, at int, roles int) *ElmTouch {
+	it := &ElmTouch{SysNum: sys, SysUnit: sysunit, Port: port, MAC: mac, TimeOn: ton, TimeAt: at, Roles: roles}
 	if sys > 0 {
 		ipm := fmt.Sprintf("%d_%d_%s", sysunit, port, mac)
 		TouchMapIPM[ipm] = it
@@ -68,6 +70,7 @@ func (it *ElmTouch) Update() {
 	set.SetItem(it.Roles, "Roles")
 	set.SetItem(it.Port, "Port")
 	set.SetItem(it.MAC, "MAC")
+	set.SetItem(it.TimeOn, "TimeOn")
 	set.SetItem(it.TimeAt, "TimeAt")
 	set.SetItem("CURRENT_TIMESTAMP", "updated_at")
 	if it.SysNum > 0 {
@@ -91,7 +94,7 @@ func TouchOnline(sysunit lik.IDB, port int, mac string, secs int) {
 			touch.Update()
 		}
 	} else {
-		touch = AddTouch(0, sysunit, port, mac, at, ROLE_ONLINE)
+		touch = AddTouch(0, sysunit, port, mac, at, at, ROLE_ONLINE)
 		if touch != nil {
 			touch.Update()
 		}
