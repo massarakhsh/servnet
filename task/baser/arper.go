@@ -102,7 +102,7 @@ func (it *ARPer) callRoot(ip string) {
 func (it *ARPer) callRouter(ip string) {
 	var sysunit lik.IDB
 	if ipelm := base.IPMapIP[base.IPFromShow(ip)]; ipelm != nil {
-		sysunit = ipelm.SysNum
+		sysunit = ipelm.SysUnit
 	}
 	if touch := likssh.Open(base.IPToShow(ip) + ":22", "admin", "", "var/host_rsa"); touch != nil {
 		if answer := touch.Execute("ip arp print without-paging"); answer != "" {
@@ -145,7 +145,7 @@ func (it *ARPer) callRouter(ip string) {
 func (it *ARPer) callSwitch(ip string) {
 	var sysunit lik.IDB
 	if ipelm := base.IPMapIP[base.IPFromShow(ip)]; ipelm != nil {
-		sysunit = ipelm.SysNum
+		sysunit = ipelm.SysUnit
 	}
 	if touch := liktel.Open(base.IPToShow(ip) + ":23", "cisco", "gamilto17"); touch != nil {
 		if _,ok := touch.Execute("terminal datadump"); ok {
