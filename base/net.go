@@ -44,17 +44,16 @@ func netLarge() {
 				porto := 0
 				if unit.SysNum == link.SysUnitA {
 					path += fmt.Sprintf("_%02d", link.PortA)
-					link.NewPath = path
 					systo = link.SysUnitB
 					porto = link.PortB
 				} else if unit.SysNum == link.SysUnitB {
 					path += fmt.Sprintf("_%02d", link.PortB)
-					link.NewPath = path
 					systo = link.SysUnitA
 					porto = link.PortA
 				}
+				path += fmt.Sprintf("#%d", int(link.SysNum))
+				link.NewPath = path
 				if unito := UnitMapSys[systo]; unito != nil && unito.NewPath == "" {
-					path += fmt.Sprintf("#%d", int(link.SysNum))
 					path += fmt.Sprintf("@%02d", porto)
 					path += fmt.Sprintf("#%d", int(unito.SysNum))
 					unito.NewPath = path
