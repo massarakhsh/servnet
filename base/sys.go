@@ -2,12 +2,13 @@ package base
 
 import (
 	"fmt"
-	"github.com/massarakhsh/lik"
 	"os"
 	"os/exec"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/massarakhsh/lik"
 )
 
 type sysAddress struct {
@@ -203,7 +204,7 @@ func sysUpdateDHCP(namefile string) bool {
 				code += fmt.Sprintf("		option netbios-node-type 4;\n")
 				code += fmt.Sprintf("		option routers %s.3;\n", ip13)
 				if ip3 == 200 {
-					code += fmt.Sprintf("		range %s.16 %s.62;\n", ip13, ip13)
+					code += fmt.Sprintf("		range %s.8 %s.126;\n", ip13, ip13)
 				}
 				if ip3 == 229 {
 					option := confClassLess()
